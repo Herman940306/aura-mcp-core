@@ -22,7 +22,7 @@ pre-commit==3.7.1
 # Security & Compliance
 # ─────────────────────────────────────────────────────────────────────────────
 cyclonedx-python-lib==4.2.2
-pip-licenses==4.3.3
+pip-licenses==5.5.0
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Local LLM (CPU-only for development)
