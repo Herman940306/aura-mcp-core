@@ -1856,7 +1856,7 @@ Every PRD edit MUST:
 | 4.3 | 2025-11-30 | Herman | Section 9: Enterprise Governance |
 | 4.4 | 2025-11-30 | Herman | Section 8.12: Audio I/O Layer (47 tools) |
 | 4.5 | 2025-01-27 | Herman | PostgreSQL (9208), Model Gateway lifecycle + Chat Router |
-| 4.6 | 2025-12-08 | Herman | V.1.9.10: Server deployment, 7 Model Gateway API endpoints verified on 192.168.1.134 |
+| 4.6 | 2025-12-08 | Herman | V.1.9.10: Server deployment, 7 Model Gateway API endpoints verified |
 | 4.7 | 2025-12-12 | Herman | V.1.9.11: MCP Concierge now uses phi3.5:3.8b via Ollama (replaces embedded GGUF) |
 
 ---

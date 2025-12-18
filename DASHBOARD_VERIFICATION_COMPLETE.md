@@ -8,12 +8,12 @@
 ### ✅ 1. Governance Tab Data Loading
 - **Status:** FIXED
 - **Verification:** Role Engine API responding at port 9206
-- **Test Result:** `curl http://192.168.1.134:9206/health` returns `{"status":"ok"}`
+- **Test Result:** `curl http://<your-host>:9206/health` returns `{"status":"ok"}`
 
 ### ✅ 2. AI System Panel Model Status
 - **Status:** FIXED  
 - **Verification:** Model Gateway API responding with real data
-- **Test Result:** `curl http://192.168.1.134:9200/v1/models/status` returns:
+- **Test Result:** `curl http://<your-host>:9200/v1/models/status` returns:
   ```json
   {
     "loaded_models": [],
@@ -31,25 +31,25 @@
 ### ✅ 3. CORS Policy Issues
 - **Status:** FIXED
 - **Verification:** CORS preflight requests now working
-- **Test Result:** `curl -H "Origin: http://192.168.1.134:9205" -X OPTIONS http://192.168.1.134:9200/v1/models/status` returns success
+- **Test Result:** `curl -H "Origin: http://<your-host>:9205" -X OPTIONS http://<your-host>:9200/v1/models/status` returns success
 
 ### ✅ 4. Intelligence Arena Data
 - **Status:** FIXED
 - **Verification:** Debate leaderboard API responding
-- **Test Result:** `curl http://192.168.1.134:9200/v1/debate/leaderboard` returns model ELO rankings
+- **Test Result:** `curl http://<your-host>:9200/v1/debate/leaderboard` returns model ELO rankings
 
 ### ✅ 5. Backend Connectivity
 - **Status:** FIXED
 - **Verification:** All services healthy
 - **Test Results:**
-  - Gateway: `http://192.168.1.134:9200/healthz` ✅
-  - Role Engine: `http://192.168.1.134:9206/health` ✅
-  - Dashboard: `http://192.168.1.134:9205` ✅
+  - Gateway: `http://<your-host>:9200/healthz` ✅
+  - Role Engine: `http://<your-host>:9206/health` ✅
+  - Dashboard: `http://<your-host>:9205` ✅
 
 ## 🚀 Next Steps for Users
 
 ### 1. Access the Dashboard
-Navigate to: **http://192.168.1.134:9205**
+Navigate to: **http://<your-host>:9205**
 
 ### 2. Test All Tabs
 - **Cockpit** - Main control center ✅
@@ -105,7 +105,7 @@ sudo docker compose logs aura-ia-gateway
 ### Dashboard Cache Refresh
 If you encounter any lingering issues:
 1. Hard refresh: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
-2. Clear browser cache for `192.168.1.134:9205`
+2. Clear browser cache for your dashboard URL
 
 ---
 

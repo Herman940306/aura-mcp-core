@@ -458,8 +458,8 @@ except Exception as e:
 1. **Firewall Rules**
 
    ```bash
-   # Allow only trusted IPs
-   ufw allow from 192.168.1.0/24 to any port 9205
+   # Allow only trusted IPs (replace with your network range)
+   ufw allow from 192.168.x.0/24 to any port 9205
    ```
 
 2. **HTTPS Setup**

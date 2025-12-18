@@ -1,12 +1,12 @@
 #!/bin/bash
 # Production Deployment Script for Aura IA MCP Dashboard
-# Target: 192.168.1.134 (NAS Server)
+# Target: Your NAS Server (set PRODUCTION_SERVER below)
 # Date: December 13, 2025
 
 set -e
 
-# Configuration
-PRODUCTION_SERVER="192.168.1.134"
+# Configuration - Set your server IP here
+PRODUCTION_SERVER="${NAS_IP:-your-nas-ip}"
 PRODUCTION_USER="wolf"
 PRODUCTION_PATH="/volume2/docker/Herman/MCP_Server"
 BACKUP_DIR="backup_$(date +%Y%m%d_%H%M%S)"

@@ -1048,7 +1048,7 @@
                     "showLineNumbers": false,
                     "showMiniMap": false
                 },
-                "content": "### 🔗 Quick Links\n- [Open Jaeger UI](http://192.168.1.134:16686) - Full tracing UI with service dependency graphs\n- [View Gateway Traces](http://192.168.1.134:16686/search?service=aura-ia-gateway) - Filter traces by Gateway service\n- [View ML Backend Traces](http://192.168.1.134:16686/search?service=aura-ia-ml) - Filter traces by ML Backend",
+                "content": "### 🔗 Quick Links\n- [Open Jaeger UI](http://localhost:16686) - Full tracing UI with service dependency graphs\n- [View Gateway Traces](http://localhost:16686/search?service=aura-ia-gateway) - Filter traces by Gateway service\n- [View ML Backend Traces](http://localhost:16686/search?service=aura-ia-ml) - Filter traces by ML Backend",
                 "mode": "markdown"
             },
             "title": "🌐 Jaeger Direct Links",

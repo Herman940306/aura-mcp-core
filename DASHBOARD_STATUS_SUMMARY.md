@@ -15,8 +15,8 @@
 ### 2. Backend URL Issues - FIXED
 
 - **File**: `dashboard/assets/app.js`
-- **Fixed**: Changed `ML_BACKEND_URL` from `localhost:9201` to `192.168.1.134:9201`
-- **Fixed**: Updated all monitoring endpoints to use NAS IP instead of localhost
+- **Fixed**: Changed `ML_BACKEND_URL` to use dynamic host detection
+- **Fixed**: Updated all monitoring endpoints to use dynamic host detection
 - **Fixed**: Removed `no-cors` mode from health checks
 - **Result**: Backend connections now target correct NAS server ✅
 
@@ -46,7 +46,7 @@
 
 ### CORS Policy Blocking API Calls
 
-- **Error**: `Access to fetch at 'http://192.168.1.134:9200/v1/models/status' from origin 'http://192.168.1.134:9205' has been blocked by CORS policy`
+- **Error**: `Access to fetch at 'http://<host>:9200/v1/models/status' from origin 'http://<host>:9205' has been blocked by CORS policy`
 - **Impact**: AI System Panel and Governance data cannot load
 - **Attempted Fix**: Added explicit CORS headers to gateway endpoints
 - **Status**: Container restart needed or alternative solution required

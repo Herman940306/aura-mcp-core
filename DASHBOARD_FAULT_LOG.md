@@ -23,7 +23,7 @@
 - **File**: `dashboard/assets/app.js` line 6
 - **Issue**: `ML_BACKEND_URL = 'http://localhost:9201'`
 - **Problem**: Dashboard runs in browser, `localhost` refers to user's machine, not NAS
-- **Fix**: Change to `http://192.168.1.134:9201`
+- **Fix**: Use dynamic host detection via `window.location.hostname`
 
 #### FAULT 2: Chat Endpoint Mismatch
 
@@ -51,8 +51,8 @@
 ### ✅ FIXED: Backend URL Issues
 
 - **File**: `dashboard/assets/app.js`
-- **Fixed**: Changed `ML_BACKEND_URL` from `localhost:9201` to `192.168.1.134:9201`
-- **Fixed**: Updated all monitoring endpoints to use NAS IP instead of localhost
+- **Fixed**: Changed `ML_BACKEND_URL` to use dynamic host detection
+- **Fixed**: Updated all monitoring endpoints to use dynamic host detection
 - **Fixed**: Removed `no-cors` mode from health checks
 
 ### ✅ FIXED: JavaScript Errors

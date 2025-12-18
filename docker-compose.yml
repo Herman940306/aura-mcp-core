@@ -49,14 +49,14 @@ services:
       MCP_TRANSPORT: sse
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       HF_HOME: /app/.cache/huggingface
-      # Home Assistant Integration (macvlan: 192.168.1.4)
+      # Home Assistant Integration (set HA_URL in .env)
       HA_TOKEN: ${HA_TOKEN:-}
-      # Media Automation APIs (Gateway proxies to NAS host 192.168.1.134)
-      RADARR_URL: http://192.168.1.134:7878
+      # Media Automation APIs (set URLs in .env)
+      RADARR_URL: ${RADARR_URL:-}
       RADARR_API_KEY: ${RADARR_API_KEY:-}
-      SONARR_URL: http://192.168.1.134:8989
+      SONARR_URL: ${SONARR_URL:-}
       SONARR_API_KEY: ${SONARR_API_KEY:-}
-      SABNZBD_URL: http://192.168.1.134:8080
+      SABNZBD_URL: ${SABNZBD_URL:-}
       SABNZBD_API_KEY: ${SABNZBD_API_KEY:-}
       # PostgreSQL Configuration
       POSTGRES_HOST: aura-ia-postgres
@@ -122,9 +122,9 @@ services:
       ML_BACKEND_URL: http://aura-ia-ml:8001
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       HF_HOME: /app/.cache/huggingface
-      # Home Assistant Integration (macvlan: 192.168.1.4)
+      # Home Assistant Integration (set HA_URL in .env)
       HA_TOKEN: ${HA_TOKEN:-}
-      # Media Automation APIs (via Gateway proxy - ML Backend on macvlan can't reach NAS host)
+      # Media Automation APIs (via Gateway proxy)
       USE_GATEWAY_PROXY: "true"
       GATEWAY_URL: http://aura-ia-gateway:8000
       SONARR_API_KEY: ${SONARR_API_KEY:-}
@@ -167,7 +167,7 @@ services:
       start_period: 30s
     networks:
       - mcp-network
-      - docker_macvlan_net # For direct Home Assistant access (192.168.1.4)
+      - docker_macvlan_net # For direct Home Assistant access (set HA_URL in .env)
       # Note: Sonarr/Radarr/SABnzbd accessed via 172.17.0.1 (Docker bridge gateway)
     # GPU Support - requires NVIDIA Container Toolkit
     # Use 'docker compose --compatibility up' or set COMPOSE_COMPATIBILITY=true
