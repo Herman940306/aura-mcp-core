@@ -1,4 +1,4 @@
-# Aura IA MCP — Enterprise AI Platform
+# Aura MCP Core: A Framework for Operational Integrity in AI Connectivity
 
 <div align="center">
 
@@ -6,8 +6,9 @@
 ![Status](https://img.shields.io/badge/status-production--ready-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![PRD](https://img.shields.io/badge/PRD-v4.4-orange.svg)
+![Standard](https://img.shields.io/badge/standard-mission--critical-red.svg)
 
-**Enterprise-grade Model Context Protocol (MCP) platform with ML intelligence, RAG retrieval, multi-agent orchestration, and comprehensive observability.**
+**A mission-critical Model Context Protocol (MCP) framework engineered for operational integrity, systematic reliability, and audit-ready state management.**
 
 [Getting Started](#-quick-start) • [Architecture](#-architecture) • [Documentation](#-documentation) • [API Reference](#-canonical-port-map)
 
@@ -15,9 +16,31 @@
 
 ---
 
+## 🔧 Systems Pedigree
+
+Aura is engineered with a focus on **systemic reliability**, drawing on a decade of experience in high-stakes systems diagnostics and technical oversight. It applies the same **zero-tolerance for failure** found in heavy-duty mechanical and electrical systems to the Model Context Protocol.
+
+This framework treats AI connectivity as critical infrastructure—where silent failures are unacceptable, state consistency is non-negotiable, and every operation must be traceable for root-cause analysis.
+
+---
+
+## 📋 Mission-Critical Standard
+
+Aura MCP Core adheres to rigorous engineering standards designed for operational environments where failure is not an option:
+
+| Principle | Implementation | Purpose |
+|-----------|----------------|---------|
+| **Strict Type Safety** | Full type hints across all modules | Ensures state consistency and prevents runtime type coercion errors |
+| **Fail-Safe Protocol Validation** | Schema validation on all MCP messages | Eliminates "silent failures" through explicit error propagation |
+| **High-Precision Monitoring** | Structured JSONL audit logs with request IDs | Provides audit-ready state logs for compliance and root-cause analysis |
+| **Circuit Breaker Patterns** | Automatic fault isolation and graceful degradation | Prevents cascade failures across interconnected services |
+| **Deterministic State Management** | Immutable configuration, versioned policies | Guarantees reproducible system behavior for standardization |
+
+---
+
 ## 🎯 Overview
 
-Aura IA MCP is a production-ready AI platform that integrates:
+Aura MCP Core is a production-grade AI connectivity framework that integrates:
 
 - **MCP Gateway** (FastMCP SSE) — Model Context Protocol server with 47+ tools
 - **ML Backend** — Sentiment analysis, semantic search, real embeddings (sentence-transformers)
@@ -181,14 +204,18 @@ cd aura-audio-service && uvicorn audio_service.main:app --port 8001
 
 ---
 
-## 🛡️ Governance & Security
+## 🛡️ Operational Integrity & Governance
 
-- **SAFE MODE**: Kill switch for training, mutation, and autonomy (423 Locked until approved)
-- **Capability Flags**: `ENABLE_TRAINING`, `ENABLE_AUTONOMY`, `ENABLE_ROLE_MUTATION`
-- **Policy Gateway**: Action evaluation with risk scoring and audit trail
-- **Audit Middleware**: Request IDs + structured JSONL logs
-- **PII Filtering**: Automatic redaction in logs and audio streams
-- **Circuit Breakers**: Fault tolerance with graceful degradation
+The framework implements defense-in-depth controls for mission-critical AI operations:
+
+| Control Layer | Mechanism | Operational Purpose |
+|---------------|-----------|---------------------|
+| **SAFE MODE** | Hardware-style kill switch (HTTP 423 Locked) | Immediate halt of training, mutation, and autonomous operations |
+| **Capability Flags** | `ENABLE_TRAINING`, `ENABLE_AUTONOMY`, `ENABLE_ROLE_MUTATION` | Granular permission gating for high-risk operations |
+| **Policy Gateway** | Risk-scored action evaluation with audit trail | Root-cause analysis capability for all state transitions |
+| **Audit Middleware** | Request IDs + structured JSONL logs | Compliance-ready logging for forensic investigation |
+| **PII Filtering** | Automatic redaction in logs and audio streams | Data protection standardization across all outputs |
+| **Circuit Breakers** | Automatic fault isolation with graceful degradation | Cascade failure prevention through systematic isolation |
 
 ---
 
@@ -292,9 +319,9 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-**Built with 🧠 by Herman Swanepoel**
+**Engineered by Herman Swanepoel**
 
-*Enterprise AI • Production Ready • Continuously Learning*
+*Operational Integrity • Systematic Reliability • Zero-Tolerance Engineering*
 
 </div>
 
@@ -1024,8 +1051,8 @@ to refresh caches and view active thresholds.
 
 ---
 
-**Built with 🧠 by Herman Swanepoel (Godmode Developer)**
-**ML-First Architecture | Continuous Learning | Adaptive Intelligence**
+**Engineered by Herman Swanepoel**
+*Operational Integrity | Root-Cause Analysis | Mission-Critical Standardization*
 
 ---
 
