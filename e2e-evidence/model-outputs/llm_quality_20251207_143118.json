@@ -1,0 +1,14 @@
+{
+  "test": "llm_quality",
+  "prompt": "Tell me something interesting about space.",
+  "response": "Did you know that the Hubble Space Telescope has discovered over 2,000 exoplanets? These are planets outside our solar system. The first confirmed detection of an exoplanet was made in 1992 by astronomers Aleksander Wolszczan and Dale",
+  "validation": {
+    "passed": true,
+    "message": "LLM response quality valid",
+    "details": {
+      "length": 234,
+      "word_count": 37,
+      "errors": []
+    }
+  }
+}

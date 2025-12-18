@@ -1,0 +1,181 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "type": "directory",
+      "name": "mcp_server",
+      "description": "MCP Server for IDE Agents Integration"
+    },
+    {
+      "id": "core_server",
+      "type": "file",
+      "name": "ide_agents_mcp_server.py",
+      "description": "Main MCP server implementation with FastMCP",
+      "language": "python"
+    },
+    {
+      "id": "mock_backend",
+      "type": "file",
+      "name": "mock_backend_server.py",
+      "description": "Mock backend server for testing (port 8001)",
+      "language": "python"
+    },
+    {
+      "id": "tool_adapters",
+      "type": "file",
+      "name": "tool_adapters.py",
+      "description": "Adapter layer for MCP tool implementations",
+      "language": "python"
+    },
+    {
+      "id": "approval",
+      "type": "file",
+      "name": "approval.py",
+      "description": "Approval gating and rate limiting system",
+      "language": "python"
+    },
+    {
+      "id": "telemetry",
+      "type": "file",
+      "name": "telemetry.py",
+      "description": "Telemetry and monitoring spans",
+      "language": "python"
+    },
+    {
+      "id": "streaming",
+      "type": "file",
+      "name": "streaming.py",
+      "description": "Streaming response utilities",
+      "language": "python"
+    },
+    {
+      "id": "plugins_dir",
+      "type": "directory",
+      "name": "plugins",
+      "description": "ML intelligence and ULTRA plugins"
+    },
+    {
+      "id": "ml_intelligence",
+      "type": "file",
+      "name": "plugins/ml_intelligence.py",
+      "description": "ML intelligence tools (emotion, predictions, personality)",
+      "language": "python"
+    },
+    {
+      "id": "calibration",
+      "type": "file",
+      "name": "plugins/calibration_service.py",
+      "description": "Confidence calibration service",
+      "language": "python"
+    },
+    {
+      "id": "rlhf_ranker",
+      "type": "file",
+      "name": "plugins/prediction_ranker_rlhf.py",
+      "description": "RLHF-based prediction ranking",
+      "language": "python"
+    },
+    {
+      "id": "prompts_dir",
+      "type": "directory",
+      "name": "prompts",
+      "description": "Slash prompts for workflows"
+    },
+    {
+      "id": "resources_dir",
+      "type": "directory",
+      "name": "resources",
+      "description": "Static resources and knowledge base"
+    },
+    {
+      "id": "tests_dir",
+      "type": "directory",
+      "name": "tests",
+      "description": "Comprehensive test suite"
+    },
+    {
+      "id": "specs_dir",
+      "type": "directory",
+      "name": ".kiro/specs",
+      "description": "Feature specifications and implementation plans"
+    }
+  ],
+  "edges": [
+    {
+      "from": "root",
+      "to": "core_server",
+      "type": "contains",
+      "label": "main entry point"
+    },
+    {
+      "from": "root",
+      "to": "mock_backend",
+      "type": "contains",
+      "label": "testing backend"
+    },
+    {
+      "from": "core_server",
+      "to": "tool_adapters",
+      "type": "imports",
+      "label": "uses adapters"
+    },
+    {
+      "from": "core_server",
+      "to": "approval",
+      "type": "imports",
+      "label": "approval gating"
+    },
+    {
+      "from": "core_server",
+      "to": "telemetry",
+      "type": "imports",
+      "label": "monitoring"
+    },
+    {
+      "from": "core_server",
+      "to": "plugins_dir",
+      "type": "loads",
+      "label": "ML plugins"
+    },
+    {
+      "from": "plugins_dir",
+      "to": "ml_intelligence",
+      "type": "contains"
+    },
+    {
+      "from": "plugins_dir",
+      "to": "calibration",
+      "type": "contains"
+    },
+    {
+      "from": "plugins_dir",
+      "to": "rlhf_ranker",
+      "type": "contains"
+    },
+    {
+      "from": "core_server",
+      "to": "prompts_dir",
+      "type": "serves",
+      "label": "slash prompts"
+    },
+    {
+      "from": "core_server",
+      "to": "resources_dir",
+      "type": "serves",
+      "label": "resources"
+    },
+    {
+      "from": "mock_backend",
+      "to": "core_server",
+      "type": "supports",
+      "label": "backend API"
+    }
+  ],
+  "metadata": {
+    "project": "MCP Server - IDE Agents Integration",
+    "version": "v0.1",
+    "created_by": "Herman Swanepoel",
+    "last_updated": "2025-01-13",
+    "description": "Model Context Protocol server bridging IDE workflows with AI intelligence"
+  }
+}

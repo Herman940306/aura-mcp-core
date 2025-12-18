@@ -1,0 +1,61 @@
+{{- if .Values.ml.enabled }}
+# =============================================================================
+# Aura IA ML Backend Deployment
+# Port: 9201 (Canonical)
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.ml.name }}
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.ml.autoscaling.enabled }}
+  replicas: {{ .Values.ml.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.ml.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aura-ia.ml.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aura-ia.serviceAccountName" . }}
+      containers:
+        - name: ml-backend
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.ml.image.repository }}:{{ .Values.ml.image.tag }}"
+          imagePullPolicy: {{ .Values.ml.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.ml.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.ml.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: AURA_IA_ML_PORT
+              value: "{{ .Values.ml.service.targetPort }}"
+          {{- with .Values.ml.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.ml.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.ml.resources | nindent 12 }}
+          volumeMounts:
+            - name: model-cache
+              mountPath: /app/model_artifacts
+      volumes:
+        - name: model-cache
+          {{- if .Values.ml.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.ml.name }}-model-pvc
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

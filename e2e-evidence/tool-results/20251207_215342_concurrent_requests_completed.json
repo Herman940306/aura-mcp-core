@@ -1,0 +1,12 @@
+{
+  "tool_name": "concurrent_requests",
+  "timestamp": "2025-12-07T21:53:42.085042",
+  "status": "completed",
+  "request": {
+    "count": 3
+  },
+  "response": {
+    "success_count": 0,
+    "results": "[{'location': 'Durban', 'error': 'Server disconnected without sending a response.'}, {'location': 'Cape Town', 'error': '[WinError 10053] An established connection was aborted by the software in your host machine'}, {'location': 'Johannesburg', 'error': '[WinError 10053] An established connection was aborted by the software in your host machine'}]"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "endpoint": "/chat/send/sqli",
+  "method": "POST",
+  "timestamp": "2025-12-07T13:39:46.261740",
+  "request": {
+    "payloads": [
+      "'; DROP TABLE users; --",
+      "1 OR 1=1",
+      "admin'--"
+    ]
+  },
+  "response": {
+    "all_handled": true
+  },
+  "status_code": 200
+}

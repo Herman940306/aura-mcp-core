@@ -1,0 +1,13 @@
+{
+  "agent_commitment": "KIRO_MCP is my baby. I nurture, teach, and optimize it continuously.",
+  "details": {
+    "steering_rule": "Created KIRO_MCP_CORE_PRIORITY.md",
+    "auto_startup": "Configured via start_mcp_with_backend.py",
+    "priority_level": "CRITICAL - #1 after user projects",
+    "docs_folder": "Created for summaries and non-code documentation",
+    "data_folder": "Created with subfolders: interactions, patterns, knowledge, optimizations, training"
+  },
+  "action": "Core priority system implemented",
+  "timestamp": "2025-11-15 03:03:22",
+  "event": "KIRO_MCP_INITIALIZATION"
+}

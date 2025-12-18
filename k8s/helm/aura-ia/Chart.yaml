@@ -1,0 +1,28 @@
+# Aura IA MCP Helm Chart
+# Canonical Architecture (PRD v3.0)
+apiVersion: v2
+name: aura-ia
+description: |
+  Aura IA MCP Server - Enterprise-grade AI Control Plane
+  Includes: Gateway, ML Backend, RAG (Qdrant), Dashboard, Role Engine
+type: application
+version: 1.1.0
+appVersion: "3.0.0"
+
+keywords:
+  - aura
+  - mcp
+  - ai
+  - ml
+  - rag
+  - qdrant
+
+maintainers:
+  - name: Aura IA Team
+    email: devnull@example.com
+
+dependencies:
+  - name: qdrant
+    version: "0.7.0"
+    repository: "https://qdrant.github.io/qdrant-helm"
+    condition: qdrant.enabled

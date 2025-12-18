@@ -1,0 +1,13 @@
+{
+  "endpoint": "/embed/dimension",
+  "method": "POST",
+  "timestamp": "2025-12-07T15:45:19.489949",
+  "request": {
+    "text": "test"
+  },
+  "response": {
+    "dimension": 384,
+    "valid": true
+  },
+  "status_code": 200
+}

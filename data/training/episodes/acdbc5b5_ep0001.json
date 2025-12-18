@@ -1,0 +1,24 @@
+{
+  "episode_id": "acdbc5b5_ep0001",
+  "run_id": "acdbc5b5",
+  "episode_number": 1,
+  "started_at": "2025-12-07T15:18:32.306867",
+  "completed_at": null,
+  "status": "in_progress",
+  "task_description": "Test 2",
+  "context": {
+    "total_episodes": 2
+  },
+  "actions": [],
+  "outcomes": [],
+  "metrics": {
+    "tokens_used": 0,
+    "inference_time_ms": 0.0,
+    "changes_proposed": 0,
+    "changes_accepted": 0,
+    "rag_queries": 0,
+    "llm_calls": 0,
+    "error_count": 0
+  },
+  "metadata": {}
+}

@@ -1,0 +1,198 @@
+# =============================================================================
+# Aura IA Network Policies
+# Zero-trust security: Only allow explicit traffic patterns
+# =============================================================================
+
+{{- if .Values.networkPolicy.enabled }}
+---
+# Gateway Network Policy - External ingress, internal egress only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.gateway.name }}-netpol
+  labels:
+    {{- include "aura-ia.gateway.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "aura-ia.gateway.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow external traffic to gateway
+    - from: []
+      ports:
+        - protocol: TCP
+          port: {{ .Values.gateway.service.targetPort }}
+  egress:
+    # Allow gateway to talk to ML backend
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.ml.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.ml.service.targetPort }}
+    # Allow gateway to talk to RAG/Qdrant
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.rag.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# ML Backend Network Policy - Only gateway can access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.ml.name }}-netpol
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "aura-ia.ml.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only gateway can access ML backend
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.gateway.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.ml.service.targetPort }}
+  egress:
+    # Allow ML backend to talk to RAG/Qdrant
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.rag.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+# RAG/Qdrant Network Policy - Internal access only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.rag.name }}-netpol
+  labels:
+    {{- include "aura-ia.rag.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "aura-ia.rag.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow from gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.gateway.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+    # Allow from ML backend
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.ml.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+  egress:
+    # Allow DNS resolution only
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+# Dashboard Network Policy - External ingress, internal egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.dashboard.name }}-netpol
+  labels:
+    {{- include "aura-ia.dashboard.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "aura-ia.dashboard.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow external traffic to dashboard
+    - from: []
+      ports:
+        - protocol: TCP
+          port: {{ .Values.dashboard.service.targetPort }}
+  egress:
+    # Allow dashboard to talk to gateway
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.gateway.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.gateway.service.targetPort }}
+    # Allow dashboard to talk to ML backend
+    - to:
+        - podSelector:
+            matchLabels:
+              {{- include "aura-ia.ml.selectorLabels" . | nindent 14 }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.ml.service.targetPort }}
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+{{- end }}

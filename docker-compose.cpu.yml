@@ -1,0 +1,19 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AURA IA MCP - CPU-Only Override
+# ═══════════════════════════════════════════════════════════════════════════════
+# Use this when GPU is not available or not desired
+# Usage: docker compose -f docker-compose.yml -f docker-compose.cpu.yml up -d
+# ═══════════════════════════════════════════════════════════════════════════════
+
+services:
+  aura-ia-ml:
+    # Override: Remove GPU reservation for CPU-only mode
+    deploy:
+      resources:
+        reservations:
+          devices: []
+    environment:
+      LLAMA_N_GPU_LAYERS: "0"
+      EMBEDDING_DEVICE: "cpu"
+      RERANK_DEVICE: "cpu"
+      AURA_DEVICE: "cpu"

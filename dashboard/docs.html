@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura IA MCP Documentation</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #8a2be2;
+            --success: #00ff00;
+            --warning: #ffaa00;
+            --danger: #ff0044;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 212, 255, 0.05) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        .brand-logo-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            position: relative;
+            display: inline-block;
+            animation: glow 2s ease-in-out infinite alternate;
+            border: 3px solid var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+        }
+
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5));
+                border-color: var(--accent-cyan);
+            }
+
+            to {
+                filter: drop-shadow(0 0 25px rgba(138, 43, 226, 0.8));
+                border-color: var(--accent-purple);
+            }
+        }
+
+        .brand-name {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-cyan));
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+            position: relative;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        .brand-slogan {
+            font-size: 1.3em;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            font-style: italic;
+            position: relative;
+        }
+
+        .brand-slogan span {
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .intro-box {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .intro-box h2 {
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+
+        .intro-box p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(138, 43, 226, 0.2);
+            border: 1px solid var(--accent-purple);
+            border-radius: 8px;
+            padding: 15px 25px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .category {
+            margin-bottom: 40px;
+        }
+
+        .category h2 {
+            color: var(--accent-cyan);
+            border-bottom: 2px solid var(--accent-purple);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-icon {
+            font-size: 1.3em;
+        }
+
+        .tool-count {
+            background: var(--accent-purple);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            margin-left: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(22, 33, 62, 0.8);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th {
+            background: var(--bg-tertiary);
+            color: var(--accent-cyan);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .tool-name {
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+
+        .function-name {
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: var(--accent-purple);
+            font-size: 0.9em;
+        }
+
+        .example {
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+            color: var(--success);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--accent-cyan);
+            text-decoration: none;
+            padding: 10px 20px;
+            border: 1px solid var(--accent-cyan);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            table {
+                font-size: 0.85em;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            .stats-row {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← Back to Dashboard</a>
+
+        <!-- Brand Header -->
+        <div class="brand-header">
+            <img src="Aura_IA.jpg" alt="Aura IA Logo" class="brand-logo-img">
+            <div class="brand-name">AURA IA</div>
+            <div class="brand-slogan">"<span>Intelligent Automation</span> for the Modern Enterprise"</div>
+        </div>
+
+        <h1>📚 MCP Tool Documentation</h1>
+        <p class="subtitle">Enterprise AI Infrastructure — Model Context Protocol</p>
+
+        <div class="intro-box">
+            <h2>What is MCP?</h2>
+            <p>The <strong>Model Context Protocol (MCP)</strong> is an open standard from Anthropic that lets AI
+                assistants securely connect to external data sources, tools, and services. It acts as a universal bridge
+                between AI models and the systems they need—databases, APIs, file systems, and custom business
+                logic—reducing custom integration overhead and making assistants more capable.</p>
+            <p>Aura IA MCP implements this protocol to expose a rich suite of intelligent tools for analysis, semantic
+                search, ML insights, workflow orchestration, and more. Requests flow through the MCP Gateway to
+                specialized backend services, each optimized for a specific task (emotion analysis, RLHF predictions,
+                vector queries, etc.). The result is an enterprise-grade AI experience with observability, security, and
+                extensibility built in.</p>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-number">76</div>
+                    <div class="stat-label">Total Tools</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">14</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Backend Services</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Observability</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Core Gateway Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🚀</span> Core Gateway Tools <span class="tool-count">12 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Health Check</td>
+                        <td class="function-name">ide_agents_health()</td>
+                        <td>Diagnostics: status, version, flags.<br><span class="example">→
+                                <code>{"status": "ok", "version": "2.0"}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Liveness Probe</td>
+                        <td class="function-name">ide_agents_healthz()</td>
+                        <td>Kubernetes liveness probe.<br><span class="example">→ <code>{"status": "live"}</code></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Readiness Probe</td>
+                        <td class="function-name">ide_agents_readyz()</td>
+                        <td>Readiness with backend connectivity.<br><span class="example">→
+                                <code>{"status": "ready", "backend_ok": true}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Metrics Snapshot</td>
+                        <td class="function-name">ide_agents_metrics_snapshot()</td>
+                        <td>Current Prometheus metrics.<br><span class="example">Returns request
+                                counts/latencies.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Run Command</td>
+                        <td class="function-name">ide_agents_run_command(command, payload)</td>
+                        <td>Execute backend command.<br><span class="example"><code>(command="echo hello")</code></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">List Entities</td>
+                        <td class="function-name">ide_agents_list_entities()</td>
+                        <td>List backend entity mappings.<br><span class="example">Registered entities list.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Fetch Documentation</td>
+                        <td class="function-name">ide_agents_fetch_doc(topic)</td>
+                        <td>Documentation snippet by topic.<br><span
+                                class="example"><code>(topic="security")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Consolidated Command</td>
+                        <td class="function-name">ide_agents_command(action, command)</td>
+                        <td>run | dry_run | explain.<br><span
+                                class="example"><code>(action="run", command="date")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Catalog Access</td>
+                        <td class="function-name">ide_agents_catalog(action, topic)</td>
+                        <td>list_entities | get_doc.<br><span
+                                class="example"><code>(action="get_doc", topic="rank")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Resource Access</td>
+                        <td class="function-name">ide_agents_resource(method, name)</td>
+                        <td>Read-only resources.<br><span
+                                class="example"><code>(method="get", name="config")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Prompt Access</td>
+                        <td class="function-name">ide_agents_prompt(method, name)</td>
+                        <td>Workflow prompts.<br><span
+                                class="example"><code>(method="get", name="code_review")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Server Instructions</td>
+                        <td class="function-name">ide_agents_server_instructions()</td>
+                        <td>Server instructions + version.<br><span class="example">Returns instruction set.</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ML Intelligence Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🧠</span> ML Intelligence Tools <span class="tool-count">15 tools</span>
+            </h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Emotion Analysis</td>
+                        <td class="function-name">ide_agents_ml_analyze_emotion(text)</td>
+                        <td>Analyze emotional tone.<br><span class="example"><code>(text="Great work!")</code> →
+                                <code>{"mood": "positive"}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Get Predictions</td>
+                        <td class="function-name">ide_agents_ml_get_predictions(user_id)</td>
+                        <td>Predictive suggestions.<br><span class="example"><code>(user_id="dev1")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Learning Insights</td>
+                        <td class="function-name">ide_agents_ml_get_learning_insights(user_id)</td>
+                        <td>Learning analytics.<br><span class="example">Returns patterns/insights.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Reasoning Analysis</td>
+                        <td class="function-name">ide_agents_ml_analyze_reasoning(command)</td>
+                        <td>Reasoning steps & safety.<br><span
+                                class="example"><code>(command="delete data")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Personality Profile</td>
+                        <td class="function-name">ide_agents_ml_get_personality_profile()</td>
+                        <td>Current AI personality.<br><span
+                                class="example"><code>{"tone": "professional"}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Adjust Personality</td>
+                        <td class="function-name">ide_agents_ml_adjust_personality(mood, tone)</td>
+                        <td>Adjust mood/tone.<br><span
+                                class="example"><code>(mood="engaged", tone="casual")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">System Status</td>
+                        <td class="function-name">ide_agents_ml_get_system_status()</td>
+                        <td>ML engines status.<br><span class="example"><code>{"emotion": "active"}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Calibrate Confidence</td>
+                        <td class="function-name">ide_agents_ml_calibrate_confidence(raw_score)</td>
+                        <td>Calibrate confidence.<br><span class="example"><code>(raw_score=0.85)</code> →
+                                <code>0.78</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">RLHF Ranking</td>
+                        <td class="function-name">ide_agents_ml_rank_predictions_rlhf(user_id, candidates)</td>
+                        <td>Rank predictions via RLHF.<br><span class="example">Ranked candidate list.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Record Outcome</td>
+                        <td class="function-name">ide_agents_ml_record_prediction_outcome(...)</td>
+                        <td>Record RLHF feedback.<br><span
+                                class="example"><code>(prediction_id="p1", user_accepted=true)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Calibration Metrics</td>
+                        <td class="function-name">ide_agents_ml_get_calibration_metrics()</td>
+                        <td>Brier/ROC metrics.<br><span class="example"><code>{"brier_score": 0.23}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">RLHF Metrics</td>
+                        <td class="function-name">ide_agents_ml_get_rlhf_metrics()</td>
+                        <td>Acceptance rate & reward.<br><span
+                                class="example"><code>{"acceptance_rate": 0.61}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Behavioral Baseline</td>
+                        <td class="function-name">ide_agents_ml_behavioral_baseline_check(user_id)</td>
+                        <td>Baseline deviation.<br><span class="example">Deviation score/anomalies.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Auto Adaptation</td>
+                        <td class="function-name">ide_agents_ml_trigger_auto_adaptation(reason)</td>
+                        <td>Trigger auto-adaptation.<br><span class="example"><code>(reason="feedback")</code></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">ULTRA Dashboard</td>
+                        <td class="function-name">ide_agents_ml_get_ultra_dashboard()</td>
+                        <td>Comprehensive ML dashboard.<br><span class="example">Calibration, RLHF, engines.</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- GitHub Integration Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🐙</span> GitHub Integration Tools <span class="tool-count">3 tools</span>
+            </h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">List Repos</td>
+                        <td class="function-name">ide_agents_github_repos(visibility, limit)</td>
+                        <td>List repos with filters.<br><span
+                                class="example"><code>(visibility="private", limit=10)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Rank Repos</td>
+                        <td class="function-name">ide_agents_github_rank_repos(query, top)</td>
+                        <td>Semantic ranking of repos.<br><span
+                                class="example"><code>(query="ML projects", top=5)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Rank All</td>
+                        <td class="function-name">ide_agents_github_rank_all(query, state)</td>
+                        <td>Rank repos/issues/PRs.<br><span
+                                class="example"><code>(query="bugs", state="open")</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ULTRA Semantic Tools -->
+        <div class="category">
+            <h2><span class="category-icon">⚡</span> ULTRA Semantic Tools <span class="tool-count">2 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">ULTRA Rank</td>
+                        <td class="function-name">ide_agents_ultra_rank(query, candidates)</td>
+                        <td>Semantic rank candidates.<br><span
+                                class="example"><code>(query="ML framework", candidates=["PyTorch","React"])</code></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">ULTRA Calibrate</td>
+                        <td class="function-name">ide_agents_ultra_calibrate(scores)</td>
+                        <td>Calibrate confidence scores.<br><span
+                                class="example"><code>(scores=[0.9,0.7,0.5])</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Debate Engine Tools -->
+        <div class="category">
+            <h2><span class="category-icon">⚖️</span> Debate Engine Tools <span class="tool-count">4 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Start Debate</td>
+                        <td class="function-name">ide_agents_debate_start(topic, rounds)</td>
+                        <td>Start debate session.<br><span
+                                class="example"><code>(topic="AI Ethics", rounds=3)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Submit Argument</td>
+                        <td class="function-name">ide_agents_debate_submit(debate_id, role, argument)</td>
+                        <td>Submit debate argument.<br><span
+                                class="example"><code>(debate_id="d1", role="proponent")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Judge Debate</td>
+                        <td class="function-name">ide_agents_debate_judge(debate_id, criteria)</td>
+                        <td>Judge and score debate.<br><span class="example">Returns winner/scores.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Debate History</td>
+                        <td class="function-name">ide_agents_debate_history(debate_id)</td>
+                        <td>Get debate history/results.<br><span class="example">Transcript and outcome.</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- DAG Workflow Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🔀</span> DAG Workflow Tools <span class="tool-count">3 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Create DAG</td>
+                        <td class="function-name">ide_agents_dag_create(name, tasks, dependencies)</td>
+                        <td>Create DAG workflow.<br><span
+                                class="example"><code>(name="pipeline", tasks=[...])</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Execute DAG</td>
+                        <td class="function-name">ide_agents_dag_execute(workflow_id, inputs)</td>
+                        <td>Execute workflow.<br><span class="example"><code>(workflow_id="wf1")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Visualize DAG</td>
+                        <td class="function-name">ide_agents_dag_visualize(workflow_id, format)</td>
+                        <td>Mermaid/ASCII diagram.<br><span class="example"><code>(format="mermaid")</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Risk & Approval Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🛡️</span> Risk & Approval Tools <span class="tool-count">3 tools</span>
+            </h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Analyze Risk</td>
+                        <td class="function-name">ide_agents_risk_analyze(operation, context)</td>
+                        <td>Assess risk level.<br><span class="example"><code>(operation="delete_data")</code> →
+                                <code>{"risk":"high"}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Route Risk</td>
+                        <td class="function-name">ide_agents_risk_route(operation, risk_level)</td>
+                        <td>Route to handler/approval.<br><span class="example">Routes based on risk.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Risk History</td>
+                        <td class="function-name">ide_agents_risk_history(limit)</td>
+                        <td>Past risk assessments.<br><span class="example"><code>(limit=20)</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Role Engine Tools -->
+        <div class="category">
+            <h2><span class="category-icon">👤</span> Role Engine Tools <span class="tool-count">5 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">List Roles</td>
+                        <td class="function-name">ide_agents_role_list(category)</td>
+                        <td>List available roles.<br><span class="example">Role taxonomy.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Get Role</td>
+                        <td class="function-name">ide_agents_role_get(role_name)</td>
+                        <td>Role details/capabilities.<br><span
+                                class="example"><code>(role_name="architect")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Check Permission</td>
+                        <td class="function-name">ide_agents_role_check(role_name, permission)</td>
+                        <td>Verify permission.<br><span
+                                class="example"><code>(role="admin", permission="write:config")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Assign Role</td>
+                        <td class="function-name">ide_agents_role_assign(role_name, context_id)</td>
+                        <td>Assign role to context.<br><span
+                                class="example"><code>(role_name="developer", context_id="ctx1")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Evaluate Role</td>
+                        <td class="function-name">ide_agents_role_evaluate(task_description)</td>
+                        <td>Best role for task.<br><span class="example"><code>(task="design API")</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- RAG Vector Database Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🗄️</span> RAG Vector Database Tools <span class="tool-count">5 tools</span>
+            </h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">RAG Query</td>
+                        <td class="function-name">ide_agents_rag_query(query, collection, top_k)</td>
+                        <td>Semantic KB search.<br><span
+                                class="example"><code>(query="deployment", top_k=5)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">RAG Upsert</td>
+                        <td class="function-name">ide_agents_rag_upsert(content, metadata, collection)</td>
+                        <td>Add/update document.<br><span
+                                class="example"><code>(content="...", metadata={...})</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">RAG Delete</td>
+                        <td class="function-name">ide_agents_rag_delete(document_id, collection)</td>
+                        <td>Delete document.<br><span class="example"><code>(document_id="doc1")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">RAG Search</td>
+                        <td class="function-name">ide_agents_rag_search(query, filters, top_k)</td>
+                        <td>Search with filters.<br><span
+                                class="example"><code>(filters={"category":"docs"})</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">RAG Status</td>
+                        <td class="function-name">ide_agents_rag_status()</td>
+                        <td>RAG service status/stats.<br><span class="example">Collection counts.</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Ollama LLM Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🦙</span> Ollama LLM Tools <span class="tool-count">5 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Consult LLM</td>
+                        <td class="function-name">ollama_consult(prompt, model, temperature)</td>
+                        <td>Chat with local LLMs.<br><span
+                                class="example"><code>(prompt="Explain REST", model="llama3")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">List Models</td>
+                        <td class="function-name">ollama_list_models()</td>
+                        <td>List available models.<br><span class="example">→
+                                <code>["llama3", "codellama", "mistral"]</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Pull Model</td>
+                        <td class="function-name">ollama_pull_model(model)</td>
+                        <td>Download model.<br><span class="example"><code>(model="codellama:13b")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Model Info</td>
+                        <td class="function-name">ollama_model_info(model)</td>
+                        <td>Model metadata.<br><span class="example"><code>(model="llama3")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Ollama Health</td>
+                        <td class="function-name">ollama_health()</td>
+                        <td>Ollama service health.<br><span class="example">→ <code>{"status":"ok"}</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Security & Audit Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🔐</span> Security & Audit Tools <span class="tool-count">4 tools</span>
+            </h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Security Anomalies</td>
+                        <td class="function-name">ide_agents_security_anomalies(window_seconds)</td>
+                        <td>Anomalies in window.<br><span class="example"><code>(window_seconds=3600)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Reload Config</td>
+                        <td class="function-name">ide_agents_reload()</td>
+                        <td>Reload caches/thresholds.<br><span class="example">Refresh configs.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Check PII</td>
+                        <td class="function-name">check_pii(text, redact)</td>
+                        <td>PII check/redact.<br><span
+                                class="example"><code>(text="email@test.com", redact=true)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Security Audit</td>
+                        <td class="function-name">get_security_audit(limit, action_filter)</td>
+                        <td>Audit log entries.<br><span class="example"><code>(limit=20)</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Audio I/O Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🎙️</span> Audio I/O Tools <span class="tool-count">5 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Speech to Text</td>
+                        <td class="function-name">speech_to_text(audio_base64, sample_rate)</td>
+                        <td>Audio → text (Vosk STT).<br><span class="example"><code>(audio_base64="...")</code></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Text to Speech</td>
+                        <td class="function-name">text_to_speech(text, speed)</td>
+                        <td>Text → audio (Jenny TTS).<br><span
+                                class="example"><code>(text="Hello", speed=1.0)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">STT Status</td>
+                        <td class="function-name">get_stt_status()</td>
+                        <td>STT service status.<br><span class="example"><code>{"status": "ready"}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">TTS Status</td>
+                        <td class="function-name">get_tts_status()</td>
+                        <td>TTS service status.<br><span class="example"><code>{"status": "ready"}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Audio Health</td>
+                        <td class="function-name">audio_health()</td>
+                        <td>Combined audio health.<br><span
+                                class="example"><code>{"stt": "ok", "tts": "ok"}</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Futuristic Computing Tools -->
+        <div class="category">
+            <h2><span class="category-icon">🌱</span> Green Computing & WASM Tools <span class="tool-count">6
+                    tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Carbon Intensity</td>
+                        <td class="function-name">check_carbon_intensity(region)</td>
+                        <td>Carbon intensity for region.<br><span class="example"><code>(region="US-CAL")</code></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Schedule Green Job</td>
+                        <td class="function-name">schedule_green_job(job_name, priority, deadline)</td>
+                        <td>Carbon-efficient scheduling.<br><span
+                                class="example"><code>(priority="low", deadline_hours=24)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Carbon Budget</td>
+                        <td class="function-name">get_carbon_budget()</td>
+                        <td>Carbon budget usage.<br><span
+                                class="example"><code>{"used":45, "remaining":55}</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">List WASM Plugins</td>
+                        <td class="function-name">list_wasm_plugins()</td>
+                        <td>Available WASM plugins.<br><span class="example">Plugin catalog.</span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Execute WASM</td>
+                        <td class="function-name">execute_wasm_plugin(plugin_name, function, args)</td>
+                        <td>Secure WASM execution.<br><span
+                                class="example"><code>(plugin_name="calc", function="add")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Enclave Status</td>
+                        <td class="function-name">get_enclave_status()</td>
+                        <td>Confidential enclave status.<br><span
+                                class="example"><code>{"enclave":"active"}</code></span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Observability Tools -->
+        <div class="category">
+            <h2><span class="category-icon">📊</span> Observability Tools <span class="tool-count">4 tools</span></h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tool</th>
+                        <th>Function</th>
+                        <th>Description & Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="tool-name">Get Metrics</td>
+                        <td class="function-name">get_metrics(service, metric_type)</td>
+                        <td>Prometheus metrics snapshot.<br><span
+                                class="example"><code>(service="gateway", metric_type="latency")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Query Traces</td>
+                        <td class="function-name">query_traces(trace_id, service, limit)</td>
+                        <td>Jaeger trace queries.<br><span
+                                class="example"><code>(service="ml-backend", limit=10)</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Get Alerts</td>
+                        <td class="function-name">get_alerts(severity)</td>
+                        <td>Prometheus alerts.<br><span class="example"><code>(severity="critical")</code></span></td>
+                    </tr>
+                    <tr>
+                        <td class="tool-name">Dashboard URL</td>
+                        <td class="function-name">get_dashboard_url(dashboard)</td>
+                        <td>Grafana dashboard links.<br><span class="example"><code>(dashboard="overview")</code></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer">
+            <p><strong>Aura IA MCP v2.0</strong> — Enterprise AI Infrastructure</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Built with ❤️ for intelligent automation</p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+{
+  "tool_name": "weather_cape town",
+  "timestamp": "2025-12-07T13:10:31.958868",
+  "status": "passed",
+  "request": {
+    "message": "what's the weather in Cape Town",
+    "conversation_id": "e2e-test-weather-cape town"
+  },
+  "response": {
+    "response": {
+      "response": "Hey! It's currently **22.2\u00b0C** in Cape Town with overcast \u2601\ufe0f and moderate winds (21.6 km/h from the south-southeast) .",
+      "weather_data": {
+        "latitude": -34.0,
+        "longitude": 18.5,
+        "generationtime_ms": 0.06508827209472656,
+        "utc_offset_seconds": 0,
+        "timezone": "GMT",
+        "timezone_abbreviation": "GMT",
+        "elevation": 31.0,
+        "current_weather_units": {
+          "time": "iso8601",
+          "interval": "seconds",
+          "temperature": "\u00b0C",
+          "windspeed": "km/h",
+          "winddirection": "\u00b0",
+          "is_day": "",
+          "weathercode": "wmo code"
+        },
+        "current_weather": {
+          "time": "2025-12-07T11:00",
+          "interval": 900,
+          "temperature": 22.2,
+          "windspeed": 21.6,
+          "winddirection": 165,
+          "is_day": 1,
+          "weathercode": 3
+        }
+      },
+      "location": "Cape Town",
+      "source": "open_meteo_api",
+      "llm_used": false
+    },
+    "tool_calls": [],
+    "conversation_id": "e2e-test-weather-cape town",
+    "mode": "general",
+    "llm_used": false,
+    "success": true
+  }
+}

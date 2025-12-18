@@ -1,0 +1,199 @@
+# Helm values for Aura Audio Service
+# PRD Section 8.12 compliant - Enterprise Audio I/O Layer
+
+audioService:
+  enabled: true
+
+  # Container image
+  image:
+    repository: aura/audio-service
+    tag: v1.0.0
+    pullPolicy: IfNotPresent
+
+  # Replicas & scaling
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    targetCPUUtilizationPercentage: 70
+
+  # Resource limits
+  resources:
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+    requests:
+      cpu: "200m"
+      memory: "256Mi"
+
+  # Service configuration
+  service:
+    type: ClusterIP
+    port: 8001
+
+  # Ingress (optional - usually proxied via gateway)
+  ingress:
+    enabled: false
+    className: nginx
+    annotations: {}
+    hosts:
+      - host: audio.aura.local
+        paths:
+          - path: /
+            pathType: Prefix
+
+  # Environment
+  env:
+    MAX_AUDIO_SECONDS: "60"
+    STT_ENGINE: "vosk"
+    TTS_ENGINE: "coqui"
+    LOG_LEVEL: "INFO"
+
+# STT Engine Configuration
+stt:
+  default_engine: "vosk"
+  allowed_engines:
+    - "vosk"
+    - "whisper_cpp"
+    - "coqui_stt"
+
+  vosk:
+    enabled: true
+    image:
+      repository: alphacep/kaldi-vosk-server
+      tag: "latest"
+    model: "vosk-model-small-en-us-0.15"
+    port: 2700
+    resources:
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+      requests:
+        cpu: "100m"
+        memory: "200Mi"
+
+  whisper:
+    enabled: false
+    model: "base.en"
+    # whisper.cpp for CPU-only inference
+
+# TTS Engine Configuration
+tts:
+  default_engine: "coqui"
+  allowed_engines:
+    - "coqui"
+    - "mozilla_tts"
+    - "espeak_ng"
+
+  coqui:
+    enabled: true
+    image:
+      repository: ghcr.io/coqui-ai/tts
+      tag: "latest"
+    model: "tts_models/en/ljspeech/tacotron2-DDC"
+    port: 5002
+    resources:
+      limits:
+        cpu: "1000m"
+        memory: "2Gi"
+      requests:
+        cpu: "200m"
+        memory: "512Mi"
+    gpu:
+      enabled: false
+      # Set to true for CUDA acceleration
+
+# Storage configuration
+storage:
+  # Ephemeral temp directory for audio processing
+  ephemeralTempDir: "/tmp/aura_audio"
+  # Persistent volume for models (optional)
+  modelsPVC:
+    enabled: false
+    size: "5Gi"
+    storageClass: ""
+
+# Security & RBAC
+rbac:
+  # Restrict to dashboard/gateway access only
+  dashboardOnly: true
+  # Service account
+  serviceAccount:
+    create: true
+    name: "aura-audio-sa"
+  # Pod security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+
+# Engine version pinning (for SBOM compliance)
+engine_pinning:
+  vosk: "0.3.45"
+  coqui: "0.22.0"
+  whisper_cpp: "1.5.4"
+
+# PII Redaction settings
+pii:
+  enabled: true
+  patterns:
+    - name: "email"
+      regex: "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}"
+    - name: "ssn"
+      regex: "\\b\\d{3}[-.]?\\d{2}[-.]?\\d{4}\\b"
+    - name: "credit_card"
+      regex: "\\b(?:\\d[ -]*?){13,16}\\b"
+    - name: "phone"
+      regex: "\\b\\d{3}[-.]?\\d{3}[-.]?\\d{4}\\b"
+
+# Policy enforcement
+policy:
+  enabled: true
+  # Integrate with HNSC Layer 6
+  hnscIntegration: true
+  bannedPatterns:
+    - "delete all"
+    - "override policy"
+    - "sudo rm"
+    - "drop table"
+    - "exec("
+
+# Observability
+observability:
+  metrics:
+    enabled: true
+    port: 9090
+    path: /metrics
+  tracing:
+    enabled: true
+    otlpEndpoint: "http://otel-collector:4317"
+  logging:
+    format: "json"
+    level: "INFO"
+
+# Health checks
+probes:
+  liveness:
+    path: /health
+    initialDelaySeconds: 10
+    periodSeconds: 30
+  readiness:
+    path: /health
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+# Network policies
+networkPolicy:
+  enabled: true
+  # Only allow traffic from gateway and dashboard
+  allowFrom:
+    - namespaceSelector:
+        matchLabels:
+          name: aura-ia
+      podSelector:
+        matchLabels:
+          app: aura-ia-gateway
+    - podSelector:
+        matchLabels:
+          app: aura-ia-dashboard

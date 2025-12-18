@@ -1,0 +1,71 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.11']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov pytest-asyncio httpx
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f aura_ia_mcp/requirements.txt ]; then pip install -r aura_ia_mcp/requirements.txt; fi
+        
+    - name: Run unit tests
+      run: |
+        pytest tests/test_unit_comprehensive.py -v \
+          --cov=aura_ia_mcp \
+          --cov=src \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-fail-under=80 \
+          --tb=short \
+          --durations=10
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      if: always()
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: aura-ia-unit-tests
+        fail_ci_if_error: false
+        
+    - name: Upload HTML coverage report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report-html
+        path: htmlcov/
+        retention-days: 30
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: unit-test-results
+        path: |
+          test_report.json
+          coverage.xml
+        retention-days: 30

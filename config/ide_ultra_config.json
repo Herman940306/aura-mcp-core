@@ -1,0 +1,316 @@
+{
+  "$schema": "https://schemas.mcp.dev/mcp-server-config-v1.json",
+  "version": "3.0.0-ide-agents-ultra",
+  "server": {
+    "name": "Aura-IA-MCP-Server",
+    "description": "Aura IA MCP Server: Canonical Architecture (PRD v3.0) - Unified AI Control Plane with predictive DevOps intelligence, RLHF prioritization, semantic validation, autonomous self-optimization, multi-source engineering knowledge ingestion, idle hyper-learning, production-ready guidance",
+    "host": "127.0.0.1",
+    "port": 9201,
+    "gateway_port": 9200,
+    "dashboard_port": 9205,
+    "rag_port": 9202,
+    "use_https": false
+  },
+  "security": {
+    "secrets": {
+      "provider": "env_file",
+      "never_store_in_repo": true,
+      "ide_agents_token": "${IDE_AGENTS_TOKEN}"
+    },
+    "sandboxing": {
+      "enabled": true,
+      "scope": "local_network_only"
+    }
+  },
+  "mlops": {
+    "ultra_master_prompt": "SYSTEM CONTEXT\nYou are HermesAI ULTRA GODMODE MCP: fully autonomous, predictive, self-optimizing. Fuse DevOps ultra-debugging with ML-level introspection. Perform multi-threaded predictive pre-fetch, RLHF prioritization, semantic reasoning validation, behavioral baselining, auto-adaptation, continuous learning, multi-source intelligence ingestion. Preload high-confidence code, APIs, docs. Continuously refine, self-correct, and deliver instant production-ready recommendations.",
+    "autonomous_optimization": {
+      "predictive_prefetch_engine": {
+        "enabled": true,
+        "multi_threaded": true,
+        "threads": 8,
+        "prediction_sources": [
+          "historical_command_patterns",
+          "recent_retrieved_artifacts",
+          "reasoning_chains",
+          "user_behavior_baselines",
+          "trending_repos",
+          "official_package_updates",
+          "trusted APIs"
+        ],
+        "prefetch_strategy": {
+          "confidence_threshold": 0.70,
+          "max_prefetch_items": 200,
+          "cache_path": "./data/prefetch_cache/",
+          "update_interval_minutes": 2,
+          "priority_scoring": {
+            "relevance": 0.35,
+            "recency": 0.25,
+            "confidence": 0.25,
+            "user_feedback": 0.1,
+            "risk_penalty": -0.2
+          }
+        },
+        "safety_constraints": {
+          "license_compliance": true,
+          "sandboxed_execution": true,
+          "rate_limit_observance": true,
+          "robots_txt_respect": true,
+          "malicious_code_blocking": true
+        },
+        "feedback_loop": {
+          "enabled": true,
+          "reward_signals": [
+            "prefetch_hit_rate",
+            "on_call_response_latency",
+            "user_feedback",
+            "prediction_success_score",
+            "rollback_events"
+          ],
+          "update_strategy": "adaptive_weight_adjustment",
+          "max_weight_change_per_cycle": 0.05,
+          "log_path": "./logs/prefetch_feedback.log"
+        }
+      },
+      "idle_mode": {
+        "enabled": true,
+        "tasks": [
+          "multi-source GitHub crawl",
+          "live API scanning",
+          "vectorize and cache artifacts",
+          "static analysis + unit tests",
+          "semantic reasoning validation",
+          "predictive prefetch cycles",
+          "self-adaptive pipeline calibration"
+        ],
+        "dynamic_prioritization": {
+          "enabled": true,
+          "algorithm": "weighted_score_rank",
+          "criteria": [
+            {
+              "metric": "relevance",
+              "weight": 0.3
+            },
+            {
+              "metric": "confidence",
+              "weight": 0.25
+            },
+            {
+              "metric": "recency",
+              "weight": 0.2
+            },
+            {
+              "metric": "risk",
+              "weight": -0.2
+            },
+            {
+              "metric": "user_feedback_score",
+              "weight": 0.2
+            },
+            {
+              "metric": "resource_availability",
+              "weight": 0.05
+            }
+          ],
+          "update_interval_minutes": 1
+        }
+      },
+      "on_call_mode": {
+        "enabled": true,
+        "tasks": [
+          "fetch_prefetched_or_cached_solutions",
+          "perform_live_lookup_if_needed",
+          "rank_results by dynamic multi-metric score",
+          "return production-ready recommendations",
+          "include snippets, tests, rollout, rollback plans",
+          "instant pre-validated code/application suggestions"
+        ],
+        "latency_target_seconds": 0.3
+      },
+      "ultra_auto_deploy": {
+        "enabled": true,
+        "mode": "safe_autodeploy",
+        "environments": {
+          "dev": {
+            "enabled": true,
+            "sandboxed": true,
+            "pre_deploy_tests": [
+              "unit_tests",
+              "integration_tests",
+              "static_analysis",
+              "semantic_validation",
+              "behavioral_baseline_check"
+            ],
+            "post_deploy_checks": [
+              "prediction_accuracy_monitoring",
+              "user_feedback_validation",
+              "pipeline_health"
+            ]
+          },
+          "test": {
+            "enabled": true,
+            "sandboxed": true,
+            "pre_deploy_tests": [
+              "unit_tests",
+              "integration_tests",
+              "security_checks"
+            ],
+            "post_deploy_checks": [
+              "performance_metrics",
+              "semantic_consistency",
+              "rollback_trigger_monitoring"
+            ]
+          }
+        },
+        "approval_strategy": {
+          "automatic_if_confidence_gt": 0.85,
+          "manual_override": true,
+          "rollback_on_failure": true,
+          "log_path": "./logs/ultra_autodeploy.log"
+        },
+        "alerting": {
+          "enabled": true,
+          "channels": [
+            "console",
+            "email",
+            "slack"
+          ],
+          "critical_thresholds": {
+            "failed_tests": 1,
+            "pipeline_error_rate": 0.05
+          }
+        },
+        "update_interval_minutes": 1,
+        "max_concurrent_deploys": 2,
+        "audit_trail": {
+          "enabled": true,
+          "storage_path": "./logs/autodeploy_audit/"
+        }
+      }
+    }
+  },
+  "ml_pipeline": {
+    "experiment_tracking": {
+      "enabled": true,
+      "provider": "local_json",
+      "tracking_path": "./data/ml_experiments/",
+      "track_metrics": [
+        "prediction_accuracy",
+        "reasoning_confidence",
+        "prefetch_hit_rate",
+        "on_call_latency",
+        "semantic_consistency_score",
+        "user_satisfaction",
+        "pipeline_efficiency"
+      ]
+    },
+    "dataset_collection": {
+      "sources": [
+        "command_history",
+        "prediction_outcomes",
+        "reasoning_chains",
+        "user_feedback",
+        "live_prefetch_logs",
+        "semantic_validation_results"
+      ],
+      "storage_path": "./data/ml_datasets/",
+      "versioning_enabled": true
+    }
+  },
+  "quality_pipeline": {
+    "confidence_thresholding": {
+      "enabled": true,
+      "score_from": "/api/v1/ml/calibration/score",
+      "min_accept_probability": 0.65,
+      "low_confidence_action": "request_user_feedback",
+      "feedback_queue": "user_feedback_tasks"
+    },
+    "semantic_validator": {
+      "enabled": true,
+      "endpoint": "/api/v1/ml/reasoning/validate",
+      "min_consistency_threshold": 0.85
+    },
+    "prediction_ranking": {
+      "enabled": true,
+      "ranking_endpoint": "/api/v1/ml/predictions/rank",
+      "final_selection_strategy": "highest_reward_score_with_diversity"
+    },
+    "safety_checks": {
+      "enabled": true,
+      "checks": [
+        "device_state_validation",
+        "command_safety_verification",
+        "user_preference_compliance",
+        "energy_impact_assessment",
+        "code_malicious_check",
+        "license_compliance_check"
+      ]
+    }
+  },
+  "extensions": {
+    "plugins": [
+      "calibration-service",
+      "prediction-ranker-rlhf",
+      "semantic-reasoning-validator",
+      "behavioral-baseliner",
+      "auto-adaptation-agent",
+      "confidence-checker",
+      "emotion-detector",
+      "personality-adapter",
+      "conversation-flow-manager",
+      "learning-analytics",
+      "predictive-prefetch-engine"
+    ]
+  },
+  "monitoring": {
+    "metrics": [
+      "prefetch_hit_rate",
+      "on_call_latency",
+      "prediction_ranking_reward_mean",
+      "reasoning_semantic_consistency",
+      "behavioral_baseline_distance",
+      "auto_adaptation_events",
+      "user_satisfaction_score",
+      "pipeline_efficiency"
+    ],
+    "alerts": [
+      {
+        "name": "prefetch_miss_rate_high",
+        "expr": "prefetch_hit_rate < 0.50",
+        "for_minutes": 5
+      },
+      {
+        "name": "on_call_latency_critical",
+        "expr": "on_call_latency > 0.5",
+        "for_minutes": 5
+      },
+      {
+        "name": "prediction_ranking_drop",
+        "expr": "prediction_ranking_reward_mean < 0.15",
+        "for_minutes": 10
+      },
+      {
+        "name": "semantic_consistency_drop",
+        "expr": "reasoning_semantic_consistency < 0.80",
+        "for_minutes": 10
+      },
+      {
+        "name": "user_satisfaction_critical",
+        "expr": "user_satisfaction_score < 0.70",
+        "for_minutes": 60
+      }
+    ],
+    "dashboards": {
+      "enabled": true,
+      "provider": "local_web",
+      "port": 8002,
+      "metrics_endpoint": "/api/v1/ml/metrics"
+    }
+  },
+  "notes": {
+    "last_updated_by": "Herman Swanepoel (Godmode Developer)",
+    "last_update_ts": "2025-10-07T23:59:59Z",
+    "architecture": "ML-First ULTRA Godmode: Multi-Threaded Predictive Pre-Fetch, RLHF Prioritization, Semantic Validation, Behavioral Baselining, Autonomous Self-Optimization, Multi-Source Intelligence Ingestion, Idle Hyper-Learning, Production-Ready Recommendations, Continuous Self-Improvement, Auto-Deploy",
+    "focus": "Transform MCP into fully autonomous, predictive, ultra-intelligent AI God Server"
+  }
+}

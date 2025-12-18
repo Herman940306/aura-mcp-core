@@ -1,0 +1,18 @@
+{
+  "meta": {
+    "version": "2.0.0",
+    "created_by": "installer_overdrive",
+    "created_at": "$(date -Iseconds)"
+  },
+  "roles": {
+    "Lead Engineer": { "purpose":"Automation & infra changes", "capabilities":["orchestrate","apply_pr","run_infra"], "scoring_profile":{"priority":9,"confidence_weight":0.9,"risk_factor":0.9} },
+    "Senior Architect": { "purpose":"Architecture & strategy", "capabilities":["design","review_arch"], "scoring_profile":{"priority":9,"confidence_weight":0.85,"risk_factor":0.8} },
+    "Full-Stack Guru": { "purpose":"Code, integration, merge","capabilities":["code","merge","debug"], "scoring_profile":{"priority":8,"confidence_weight":0.9,"risk_factor":0.9} },
+    "Researcher": { "purpose":"RAG & analysis","capabilities":["query","upsert_memory"], "scoring_profile":{"priority":4,"confidence_weight":0.5,"risk_factor":0.2} },
+    "Security Officer": { "purpose":"Security & compliance","capabilities":["approve_security","block_action"], "scoring_profile":{"priority":10,"confidence_weight":0.95,"risk_factor":1.0} },
+    "Product Owner": { "purpose":"Requirements & acceptance","capabilities":["prioritize","acceptance"], "scoring_profile":{"priority":7,"confidence_weight":0.6,"risk_factor":0.6} },
+    "Knowledge Curator": { "purpose":"Docs & memory","capabilities":["doc_update","memory_curation"], "scoring_profile":{"priority":3,"confidence_weight":0.4,"risk_factor":0.1} },
+    "Coordinator": { "purpose":"Multi-agent coordination","capabilities":["route","delegate"], "scoring_profile":{"priority":6,"confidence_weight":0.6,"risk_factor":0.5} },
+    "UX Designer": { "purpose":"UX & formatting","capabilities":["format","ux_improve"], "scoring_profile":{"priority":2,"confidence_weight":0.3,"risk_factor":0.1} }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "endpoint": "/health/performance",
+  "method": "GET",
+  "timestamp": "2025-12-07T13:11:04.281677",
+  "request": null,
+  "response": {
+    "status_code": 200,
+    "response_time_ms": 10.396242141723633
+  },
+  "status_code": 200
+}

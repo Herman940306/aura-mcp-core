@@ -1,0 +1,21 @@
+{{- if .Values.ml.enabled }}
+# =============================================================================
+# Aura IA ML Backend Service
+# Port: 9201 (Canonical)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.ml.name }}
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.ml.service.type }}
+  ports:
+    - port: {{ .Values.ml.service.port }}
+      targetPort: {{ .Values.ml.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "aura-ia.ml.selectorLabels" . | nindent 4 }}
+{{- end }}

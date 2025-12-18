@@ -1,0 +1,269 @@
+{
+  "timestamp": "2025-11-30T21:09:43.814558",
+  "total_tests": 22,
+  "passed_tests": 18,
+  "failed_tests": 4,
+  "total_duration_ms": 5513.378858566284,
+  "performance_metrics": {
+    "average_latency_ms": 193.90793641408285,
+    "min_latency_ms": 0.0,
+    "max_latency_ms": 2655.0703048706055,
+    "total_duration_ms": 5513.378858566284,
+    "tests_per_second": 3.990293532217183,
+    "by_category": {
+      "Core": {
+        "passed": 11,
+        "failed": 0
+      },
+      "ML": {
+        "passed": 0,
+        "failed": 4
+      },
+      "GitHub": {
+        "passed": 3,
+        "failed": 0
+      },
+      "Error Handling": {
+        "passed": 4,
+        "failed": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "name": "Health Tool",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 2.0096302032470703,
+      "error": null,
+      "warning": null,
+      "details": {
+        "version": "v0.1",
+        "ultra_enabled": false
+      }
+    },
+    {
+      "name": "Catalog List Entities",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 3.5157203674316406,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "Catalog Get Doc",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 2.5026798248291016,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "Resource List",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "resource_count": 3,
+        "expected_found": [
+          "repo.graph",
+          "kb.snippet",
+          "build.logs"
+        ]
+      }
+    },
+    {
+      "name": "Resource Get repo.graph",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 1.0068416595458984,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_type": "dict",
+        "content_size": 3312
+      }
+    },
+    {
+      "name": "Resource Get kb.snippet",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.6134510040283203,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_type": "str",
+        "content_size": 132
+      }
+    },
+    {
+      "name": "Resource Get build.logs",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.5037784576416016,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_type": "str",
+        "content_size": 57
+      }
+    },
+    {
+      "name": "Prompt List",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.5071163177490234,
+      "error": null,
+      "warning": null,
+      "details": {
+        "prompt_count": 6,
+        "expected_found": [
+          "/diff_review",
+          "/test_failures",
+          "/hotfix_plan",
+          "/rank_github_repos",
+          "/rank_github_all",
+          "/rank_top_bug_prs"
+        ]
+      }
+    },
+    {
+      "name": "Prompt Get /diff_review",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_length": 261
+      }
+    },
+    {
+      "name": "Command Dry Run",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Command Explain",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "ML Analyze Emotion (Happy)",
+      "category": "ML",
+      "passed": false,
+      "duration_ms": 0.0,
+      "error": "Unknown tool requested: ide_agents_ml_analyze_emotion",
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "ML Analyze Emotion (Sad)",
+      "category": "ML",
+      "passed": false,
+      "duration_ms": 0.0,
+      "error": "rate_limited: please retry shortly",
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "ML Get Predictions",
+      "category": "ML",
+      "passed": false,
+      "duration_ms": 0.0,
+      "error": "Unknown tool requested: ide_agents_ml_get_predictions",
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "ML Get Learning Insights",
+      "category": "ML",
+      "passed": false,
+      "duration_ms": 0.0,
+      "error": "Unknown tool requested: ide_agents_ml_get_learning_insights",
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "GitHub Repos",
+      "category": "GitHub",
+      "passed": true,
+      "duration_ms": 821.6021060943604,
+      "error": null,
+      "warning": null,
+      "details": {
+        "repo_count": 5
+      }
+    },
+    {
+      "name": "GitHub Rank Repos",
+      "category": "GitHub",
+      "passed": true,
+      "duration_ms": 1.0056495666503906,
+      "error": null,
+      "warning": null,
+      "details": {
+        "ranking_count": 5
+      }
+    },
+    {
+      "name": "GitHub Rank All",
+      "category": "GitHub",
+      "passed": true,
+      "duration_ms": 2655.0703048706055,
+      "error": null,
+      "warning": null,
+      "details": {
+        "ranking_count": 8
+      }
+    },
+    {
+      "name": "Invalid Tool Name",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Invalid Arguments",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Rate Limiting",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 2.0055770874023438,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Approval Workflow",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    }
+  ]
+}

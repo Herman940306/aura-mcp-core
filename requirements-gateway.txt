@@ -1,0 +1,12 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AURA IA MCP - Gateway Requirements
+# ═══════════════════════════════════════════════════════════════════════════════
+# Additional dependencies for the MCP Gateway service only
+# Base requirements are inherited from the base image
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Gateway currently uses only base requirements
+# Add service-specific dependencies here as needed
+
+# Database connectivity for debate persistence and dashboard summary
+asyncpg>=0.29.0

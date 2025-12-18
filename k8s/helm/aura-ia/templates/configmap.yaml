@@ -1,0 +1,54 @@
+# =============================================================================
+# Aura IA ConfigMap
+# Centralized configuration for all services
+# =============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-config
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+data:
+  # ========================================
+  # Port Configuration (Canonical)
+  # ========================================
+  AURA_IA_GATEWAY_PORT: "{{ .Values.gateway.service.port }}"
+  AURA_IA_ML_PORT: "{{ .Values.ml.service.port }}"
+  AURA_IA_RAG_HTTP_PORT: "{{ .Values.rag.service.httpPort }}"
+  AURA_IA_RAG_GRPC_PORT: "{{ .Values.rag.service.grpcPort }}"
+  AURA_IA_METRICS_PORT: "9204"
+  AURA_IA_DASHBOARD_PORT: "{{ .Values.dashboard.service.port }}"
+  AURA_IA_ROLE_ENGINE_PORT: "{{ .Values.roleEngine.service.port }}"
+
+  # ========================================
+  # Service Discovery URLs
+  # ========================================
+  GATEWAY_URL: "http://{{ .Values.gateway.name }}:{{ .Values.gateway.service.port }}"
+  ML_BACKEND_URL: "http://{{ .Values.ml.name }}:{{ .Values.ml.service.port }}"
+  RAG_HTTP_URL: "http://{{ .Values.rag.name }}:{{ .Values.rag.service.httpPort }}"
+  RAG_GRPC_URL: "{{ .Values.rag.name }}:{{ .Values.rag.service.grpcPort }}"
+  DASHBOARD_URL: "http://{{ .Values.dashboard.name }}:{{ .Values.dashboard.service.port }}"
+  ROLE_ENGINE_URL: "http://{{ .Values.roleEngine.name }}:{{ .Values.roleEngine.service.port }}"
+
+  # ========================================
+  # Feature Flags
+  # ========================================
+  ENABLE_RATE_LIMITING: "{{ .Values.features.rateLimiting.enabled }}"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "{{ .Values.features.rateLimiting.requestsPerMinute }}"
+  ENABLE_METRICS: "{{ .Values.features.metrics.enabled }}"
+  ENABLE_TRACING: "{{ .Values.features.tracing.enabled }}"
+  ENABLE_SAFE_MODE: "{{ .Values.features.safeMode.enabled }}"
+  SAFE_MODE_VIOLATION_THRESHOLD: "{{ .Values.features.safeMode.violationThreshold }}"
+
+  # ========================================
+  # Logging Configuration
+  # ========================================
+  LOG_LEVEL: "{{ .Values.logging.level }}"
+  LOG_FORMAT: "{{ .Values.logging.format }}"
+
+  # ========================================
+  # OpenTelemetry Configuration
+  # ========================================
+  OTEL_EXPORTER_OTLP_ENDPOINT: "{{ .Values.observability.otelEndpoint }}"
+  OTEL_SERVICE_NAME: "aura-ia"
+  OTEL_RESOURCE_ATTRIBUTES: "service.namespace=aura-ia,deployment.environment={{ .Values.global.environment }}"

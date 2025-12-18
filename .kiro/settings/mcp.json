@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "kiro-mcp": {
+      "command": "C:\\Users\\herma\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+      "args": [
+        "start_mcp_with_backend.py"
+      ],
+      "cwd": "C:\\Users\\herma\\AppData\\Local\\Programs\\Kiro\\mcp-servers\\kiro_mcp",
+      "env": {
+        "IDE_AGENTS_BACKEND_URL": "http://127.0.0.1:8001",
+        "GITHUB_TOKEN": "${GITHUB_TOKEN}",
+        "IDE_AGENTS_ULTRA_ENABLED": "true",
+        "IDE_AGENTS_ULTRA_LOCAL": "false",
+        "IDE_AGENTS_ULTRA_MOCK": "false",
+        "MCP_TOOL_SPANS_DIR": "./logs",
+        "IDE_AGENTS_REQUEST_TIMEOUT": "30.0"
+      },
+      "disabled": true,
+      "autoApprove": [
+        "ide_agents_health",
+        "ide_agents_ml_analyze_emotion",
+        "ide_agents_ml_get_predictions",
+        "ide_agents_ml_get_learning_insights",
+        "ide_agents_ml_get_system_status",
+        "ide_agents_github_repos",
+        "ide_agents_github_rank_repos",
+        "ide_agents_github_rank_all",
+        "ide_agents_resource",
+        "ide_agents_prompt",
+        "ide_agents_catalog"
+      ]
+    }
+  }
+}

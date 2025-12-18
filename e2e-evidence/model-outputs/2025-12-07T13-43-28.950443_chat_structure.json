@@ -1,0 +1,24 @@
+{
+  "name": "chat_structure",
+  "timestamp": "2025-12-07T13:43:28.950443",
+  "passed": true,
+  "message": "Chat response structure valid",
+  "details": {
+    "fields_present": [
+      "response",
+      "tool_calls",
+      "conversation_id",
+      "mode",
+      "llm_used",
+      "success"
+    ]
+  },
+  "data": {
+    "response": "Hi! How can I assist you with the Aura_IA MCP stack today?",
+    "tool_calls": [],
+    "conversation_id": "e2e-api-test-1",
+    "mode": "general",
+    "llm_used": true,
+    "success": true
+  }
+}

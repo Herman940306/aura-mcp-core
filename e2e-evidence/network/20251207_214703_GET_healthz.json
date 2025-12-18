@@ -1,0 +1,10 @@
+{
+  "endpoint": "/healthz",
+  "method": "GET",
+  "timestamp": "2025-12-07T21:47:03.268728",
+  "request": null,
+  "response": {
+    "status_code": 404
+  },
+  "status_code": 404
+}

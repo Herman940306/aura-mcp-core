@@ -1,0 +1,132 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║     █████╗ ██╗   ██╗██████╗  █████╗     ██╗ █████╗                           ║
+║    ██╔══██╗██║   ██║██╔══██╗██╔══██╗    ██║██╔══██╗                          ║
+║    ███████║██║   ██║██████╔╝███████║    ██║███████║                          ║
+║    ██╔══██║██║   ██║██╔══██╗██╔══██║    ██║██╔══██║                          ║
+║    ██║  ██║╚██████╔╝██║  ██║██║  ██║    ██║██║  ██║                          ║
+║    ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝    ╚═╝╚═╝  ╚═╝                          ║
+║                                                                              ║
+║    MCP Server Platform - Enterprise Deployment                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+🎉 Aura IA has been deployed to your cluster!
+
+═══════════════════════════════════════════════════════════════════════════════
+                            📡 SERVICE ENDPOINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+{{- if .Values.gateway.enabled }}
+🌐 Gateway API (Port 9200):
+   kubectl port-forward svc/{{ .Values.gateway.name }} 9200:{{ .Values.gateway.service.port }}
+   URL: http://localhost:9200
+{{- end }}
+
+{{- if .Values.ml.enabled }}
+🧠 ML Backend (Port 9201):
+   kubectl port-forward svc/{{ .Values.ml.name }} 9201:{{ .Values.ml.service.port }}
+   URL: http://localhost:9201
+{{- end }}
+
+{{- if .Values.rag.enabled }}
+📚 RAG/Vector Store (Ports 9202/9203):
+   kubectl port-forward svc/{{ .Values.rag.name }} 9202:{{ .Values.rag.service.httpPort }}
+   HTTP: http://localhost:9202
+   gRPC: localhost:9203
+{{- end }}
+
+{{- if .Values.dashboard.enabled }}
+📊 Dashboard (Port 9205):
+   kubectl port-forward svc/{{ .Values.dashboard.name }} 9205:{{ .Values.dashboard.service.port }}
+   URL: http://localhost:9205
+{{- end }}
+
+{{- if .Values.roleEngine.enabled }}
+🎭 Role Engine (Port 9206):
+   kubectl port-forward svc/{{ .Values.roleEngine.name }} 9206:{{ .Values.roleEngine.service.port }}
+   URL: http://localhost:9206
+{{- end }}
+
+═══════════════════════════════════════════════════════════════════════════════
+                              🔍 HEALTH CHECKS
+═══════════════════════════════════════════════════════════════════════════════
+
+Check Gateway health:
+  curl http://localhost:9200/health
+
+Check ML Backend health:
+  curl http://localhost:9201/health
+
+Check readiness:
+  curl http://localhost:9200/readyz
+
+═══════════════════════════════════════════════════════════════════════════════
+                              🛠 USEFUL COMMANDS
+═══════════════════════════════════════════════════════════════════════════════
+
+View all pods:
+  kubectl get pods -l app.kubernetes.io/part-of=aura-ia
+
+View logs:
+  kubectl logs -l app.kubernetes.io/name={{ .Values.gateway.name }} -f
+
+Scale gateway:
+  kubectl scale deployment/{{ .Values.gateway.name }} --replicas=5
+
+{{- if .Values.canary.enabled }}
+
+═══════════════════════════════════════════════════════════════════════════════
+                            🐦 CANARY DEPLOYMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+Argo Rollouts is ENABLED. To manage canary deployments:
+
+View rollout status:
+  kubectl argo rollouts get rollout {{ .Values.gateway.name }}-rollout
+
+Promote canary to stable:
+  kubectl argo rollouts promote {{ .Values.gateway.name }}-rollout
+
+Abort rollout:
+  kubectl argo rollouts abort {{ .Values.gateway.name }}-rollout
+{{- end }}
+
+{{- if .Values.keda.enabled }}
+
+═══════════════════════════════════════════════════════════════════════════════
+                          📈 KEDA AUTOSCALING
+═══════════════════════════════════════════════════════════════════════════════
+
+KEDA is ENABLED for queue-based autoscaling.
+
+View ScaledObjects:
+  kubectl get scaledobjects -n {{ .Release.Namespace }}
+
+View HPA status:
+  kubectl get hpa -n {{ .Release.Namespace }}
+{{- end }}
+
+{{- if .Values.chaos.enabled }}
+
+═══════════════════════════════════════════════════════════════════════════════
+                          🔥 CHAOS ENGINEERING
+═══════════════════════════════════════════════════════════════════════════════
+
+Chaos Mesh experiments are ENABLED.
+
+View active experiments:
+  kubectl get networkchaos,podchaos,stresschaos -n {{ .Release.Namespace }}
+
+Pause all experiments:
+  kubectl annotate networkchaos,podchaos,stresschaos \
+    experiment.chaos-mesh.org/pause=true -n {{ .Release.Namespace }}
+{{- end }}
+
+═══════════════════════════════════════════════════════════════════════════════
+                              📖 DOCUMENTATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Full documentation: https://github.com/aura-ia/mcp-server
+Helm chart values:  helm show values aura-ia/aura-ia
+
+═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,12 @@
+{
+  "endpoint": "/embed",
+  "method": "POST",
+  "timestamp": "2025-12-07T13:47:26.664141",
+  "request": {
+    "text": "test embedding"
+  },
+  "response": {
+    "status_code": 404
+  },
+  "status_code": 404
+}

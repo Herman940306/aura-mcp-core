@@ -1,0 +1,23 @@
+{
+  "id": "67bd20a0-8bc8-469d-8c67-41c183a10962",
+  "timestamp": "2025-11-29T22:48:49.790959",
+  "messages": [
+    {
+      "model": "model-a",
+      "role": "assistant",
+      "content": "Hello"
+    },
+    {
+      "model": "model-b",
+      "role": "assistant",
+      "content": "Hi there"
+    }
+  ],
+  "metadata": {
+    "test": "value"
+  },
+  "provenance": {
+    "logged_at": "2025-11-29T22:48:49.790959",
+    "version": "1.0"
+  }
+}

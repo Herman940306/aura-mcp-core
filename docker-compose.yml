@@ -1,0 +1,352 @@
+services:
+  # ============================================================================
+  # Core Services (Enterprise Pattern) - Aura IA Canonical Architecture
+  # ============================================================================
+
+  # PostgreSQL Database - Persistent memory and state
+  aura-ia-postgres:
+    image: postgres:16-alpine
+    container_name: aura_ia_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aura_db
+      POSTGRES_USER: Admin
+      POSTGRES_HOST_AUTH_METHOD: trust # No password
+    ports:
+      - "9208:5432" # Aura IA PostgreSQL (Canonical)
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U Admin -d aura_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - mcp-network
+
+  # API Gateway - Routes, auth, rate limiting
+  aura-ia-gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mcp
+    container_name: aura_ia_gateway
+    restart: unless-stopped
+    depends_on:
+      aura-ia-postgres:
+        condition: service_healthy
+      aura-ia-ml:
+        condition: service_healthy
+      aura-ia-rag:
+        condition: service_started
+      aura-ia-ollama:
+        condition: service_started # Changed: don't require models to be loaded
+    environment:
+      IDE_AGENTS_BACKEND_URL: http://aura-ia-ml:8001
+      IDE_AGENTS_ULTRA_ENABLED: "true"
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8000
+      MCP_TRANSPORT: sse
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      HF_HOME: /app/.cache/huggingface
+      # Home Assistant Integration (macvlan: 192.168.1.4)
+      HA_TOKEN: ${HA_TOKEN:-}
+      # Media Automation APIs (Gateway proxies to NAS host 192.168.1.134)
+      RADARR_URL: http://192.168.1.134:7878
+      RADARR_API_KEY: ${RADARR_API_KEY:-}
+      SONARR_URL: http://192.168.1.134:8989
+      SONARR_API_KEY: ${SONARR_API_KEY:-}
+      SABNZBD_URL: http://192.168.1.134:8080
+      SABNZBD_API_KEY: ${SABNZBD_API_KEY:-}
+      # PostgreSQL Configuration
+      POSTGRES_HOST: aura-ia-postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: Admin
+      POSTGRES_DB: aura_db
+      # Ollama Configuration (Model Lifecycle Manager)
+      OLLAMA_BASE_URL: http://aura-ia-ollama:11434
+      # OpenTelemetry Tracing (sends to Jaeger)
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: "aura-ia-gateway"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      # Wave 6 Configuration
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      EMBEDDING_DEVICE: ${EMBEDDING_DEVICE:-cpu}
+      RERANK_ENABLED: ${RERANK_ENABLED:-0}
+      QUERY_EXPANSION_ENABLED: ${QUERY_EXPANSION_ENABLED:-0}
+      QDRANT_HOST: aura-ia-rag
+      QDRANT_PORT: 6333
+      QDRANT_POOL_SIZE: ${QDRANT_POOL_SIZE:-3}
+      # ─────────────────────────────────────────────────────────────────────────────
+      # Task 4: Dashboard WebSocket & Real-time Updates
+      # ─────────────────────────────────────────────────────────────────────────────
+      FEATURE_REAL_TIME_UPDATES: ${FEATURE_REAL_TIME_UPDATES:-true}
+      FEATURE_WEBSOCKET_FALLBACK: ${FEATURE_WEBSOCKET_FALLBACK:-true}
+      FEATURE_SYSTEM_MONITORING: ${FEATURE_SYSTEM_MONITORING:-true}
+      FEATURE_DATABASE_MONITORING: ${FEATURE_DATABASE_MONITORING:-true}
+      ENABLE_GPU_MONITORING: ${ENABLE_GPU_MONITORING:-false}
+      ENABLE_TEMPERATURE_MONITORING: ${ENABLE_TEMPERATURE_MONITORING:-false}
+    ports:
+      - "9200:8000" # Aura IA MCP SSE endpoint (Canonical)
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - mcp-model-cache:/app/.cache/huggingface
+    networks:
+      - mcp-network
+      # NOTE: macvlan breaks port publishing - removed from gateway
+
+  # ML Backend - Model inference, embeddings, dual-model engine
+  aura-ia-ml:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+      args:
+        # Pass GPU detection to build
+        ENABLE_CUDA: ${ENABLE_CUDA:-auto}
+    container_name: aura_ia_ml
+    restart: unless-stopped
+    volumes:
+      - ./src:/app/src
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - mcp-model-cache:/app/.cache/huggingface
+      - ./model_artifacts:/app/model_artifacts:ro
+    environment:
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: 8001
+      # ML Backend URL for chat service (internal Docker network)
+      ML_BACKEND_URL: http://aura-ia-ml:8001
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      HF_HOME: /app/.cache/huggingface
+      # Home Assistant Integration (macvlan: 192.168.1.4)
+      HA_TOKEN: ${HA_TOKEN:-}
+      # Media Automation APIs (via Gateway proxy - ML Backend on macvlan can't reach NAS host)
+      USE_GATEWAY_PROXY: "true"
+      GATEWAY_URL: http://aura-ia-gateway:8000
+      SONARR_API_KEY: ${SONARR_API_KEY:-}
+      RADARR_API_KEY: ${RADARR_API_KEY:-}
+      SABNZBD_API_KEY: ${SABNZBD_API_KEY:-}
+      ORGANIZR_API_KEY: ${ORGANIZR_API_KEY:-}
+      # Database for media tracking (PostgreSQL)
+      DATABASE_URL: ${DATABASE_URL:-postgresql://Admin@aura-ia-postgres:5432/aura_db}
+      # GPU Auto-Detection
+      CUDA_VISIBLE_DEVICES: ${CUDA_VISIBLE_DEVICES:-}
+      LLAMA_N_GPU_LAYERS: ${LLAMA_N_GPU_LAYERS:-auto}
+      # Wave 6 Model Gateway
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      EMBEDDING_DEVICE: ${EMBEDDING_DEVICE:-auto}
+      RERANK_ENABLED: ${RERANK_ENABLED:-0}
+      RERANK_MODEL: ${RERANK_MODEL:-cross-encoder/ms-marco-MiniLM-L-6-v2}
+      RERANK_DEVICE: ${RERANK_DEVICE:-auto}
+      # Ollama Integration (PRD Section 8.13)
+      OLLAMA_BASE_URL: http://aura-ia-ollama:11434
+      OLLAMA_DEFAULT_MODEL: ${OLLAMA_DEFAULT_MODEL:-llama3}
+      # OpenTelemetry Tracing (sends to Jaeger)
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: "aura-ia-ml-backend"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      # ─────────────────────────────────────────────────────────────────────────────
+      # Task 4: System Monitoring Features
+      # ─────────────────────────────────────────────────────────────────────────────
+      FEATURE_SYSTEM_MONITORING: ${FEATURE_SYSTEM_MONITORING:-true}
+      ENABLE_GPU_MONITORING: ${ENABLE_GPU_MONITORING:-false}
+      ENABLE_TEMPERATURE_MONITORING: ${ENABLE_TEMPERATURE_MONITORING:-false}
+    ports:
+      - "9201:8001" # Aura IA ML Backend API (Canonical)
+      - "9209:9209" # Aura IA WebSocket (Debate/DAG)
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - mcp-network
+      - docker_macvlan_net # For direct Home Assistant access (192.168.1.4)
+      # Note: Sonarr/Radarr/SABnzbd accessed via 172.17.0.1 (Docker bridge gateway)
+    # GPU Support - requires NVIDIA Container Toolkit
+    # Use 'docker compose --compatibility up' or set COMPOSE_COMPATIBILITY=true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # Vector Database - Qdrant for embeddings & retrieval
+  aura-ia-rag:
+    image: qdrant/qdrant:v1.11.3
+    container_name: aura_ia_rag
+    restart: unless-stopped
+    environment:
+      QDRANT__SERVICE__HTTP_PORT: 6333
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    ports:
+      - "9202:6333" # Aura IA RAG HTTP API (Canonical)
+      - "9203:6334" # Aura IA RAG gRPC API (Canonical)
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      - mcp-network
+
+  # Dashboard - Monitoring UI
+  aura-ia-dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    container_name: aura_ia_dashboard
+    restart: unless-stopped
+    depends_on:
+      - aura-ia-gateway
+    ports:
+      - "9205:80" # Aura IA Dashboard (Canonical)
+    volumes:
+      - ./dashboard:/usr/share/nginx/html:ro
+    networks:
+      - mcp-network
+
+  # Role Engine - Permission & trust level management
+  aura-ia-role-engine:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mcp
+    container_name: aura_ia_role_engine
+    restart: unless-stopped
+    environment:
+      AUTO_APPROVE: "false"
+      MAX_AUTOGEN_RISK: "0.6"
+      # OpenTelemetry Tracing (sends to Jaeger)
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: "aura-ia-role-engine"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+    ports:
+      - "9206:9206" # Aura IA Role Engine (Canonical)
+    volumes:
+      - ./ops:/app/ops
+      - ./logs:/app/logs
+    command:
+      [
+        "uvicorn",
+        "ops.role_engine.are_service:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "9206",
+      ]
+    networks:
+      - mcp-network
+
+  # ============================================================================
+  # Ollama Agent Service (PRD Section 8.13 - External LLM Consultants)
+  # ============================================================================
+  aura-ia-ollama:
+    image: ollama/ollama:latest
+    container_name: aura_ia_ollama
+    restart: unless-stopped
+    environment:
+      # Ollama configuration
+      OLLAMA_HOST: 0.0.0.0
+      OLLAMA_MODELS: /root/.ollama/models
+      # Performance tuning - LIMIT CPU THREADS to prevent server strain
+      OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-1}
+      OLLAMA_MAX_LOADED_MODELS: ${OLLAMA_MAX_LOADED_MODELS:-1}
+      OLLAMA_NUM_THREADS: "4" # Limit CPU threads (default uses all cores)
+      OLLAMA_KEEP_ALIVE: -1 # Always keep models in memory (prevent cold starts)
+      # GPU Configuration - Force GPU 0
+      CUDA_VISIBLE_DEVICES: "0"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    ports:
+      - "9207:11434" # Aura IA Ollama Service (Canonical)
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - mcp-network
+    # GPU Support - requires NVIDIA Container Toolkit
+    # Comment out if no GPU available
+    deploy:
+      resources:
+        reservations:
+          memory: 4G
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+# ============================================================================
+# Optional Services (Uncomment to enable)
+# ============================================================================
+
+# Event Bus - NATS for service-to-service messaging (future task engine)
+# nats:
+#   image: nats:2.10-alpine
+#   container_name: mcp_nats
+#   restart: unless-stopped
+#   ports:
+#     - "4222:4222"  # Client connections
+#     - "8222:8222"  # HTTP monitoring
+#   command: ["-js", "-m", "8222"]  # Enable JetStream + monitoring
+#   networks:
+#     - mcp-network
+
+# Prometheus - Metrics collection
+# prometheus:
+#   image: prom/prometheus:latest
+#   container_name: mcp_prometheus
+#   restart: unless-stopped
+#   ports:
+#     - "9090:9090"
+#   volumes:
+#     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+#     - prometheus-data:/prometheus
+#   command:
+#     - '--config.file=/etc/prometheus/prometheus.yml'
+#     - '--storage.tsdb.path=/prometheus'
+#   networks:
+#     - mcp-network
+
+# Grafana - Metrics visualization
+# grafana:
+#   image: grafana/grafana:latest
+#   container_name: mcp_grafana
+#   restart: unless-stopped
+#   ports:
+#     - "3000:3000"
+#   environment:
+#     GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+#   volumes:
+#     - grafana-data:/var/lib/grafana
+#     - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+#   depends_on:
+#     - prometheus
+#   networks:
+#     - mcp-network
+
+volumes:
+  backend-model-cache:
+  mcp-model-cache:
+  qdrant-data:
+  ollama-models:
+  postgres-data:
+    # prometheus-data:
+    # grafana-data:
+
+networks:
+  mcp-network:
+    driver: bridge
+  # External macvlan network for Home Assistant connectivity
+  docker_macvlan_net:
+    external: true

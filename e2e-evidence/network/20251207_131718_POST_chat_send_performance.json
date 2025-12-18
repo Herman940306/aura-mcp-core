@@ -1,0 +1,14 @@
+{
+  "endpoint": "/chat/send/performance",
+  "method": "POST",
+  "timestamp": "2025-12-07T13:17:18.500847",
+  "request": {
+    "message": "Quick test",
+    "conversation_id": "e2e-perf-test"
+  },
+  "response": {
+    "status_code": 200,
+    "response_time_ms": 989.5644187927246
+  },
+  "status_code": 200
+}

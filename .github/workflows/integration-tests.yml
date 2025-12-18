@@ -1,0 +1,94 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      qdrant:
+        image: qdrant/qdrant:v1.11.3
+        ports:
+          - 6333:6333
+          - 6334:6334
+        options: >-
+          --health-cmd "curl -f http://localhost:6333/healthz || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-asyncio httpx docker-compose pyyaml
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        if [ -f aura_ia_mcp/requirements.txt ]; then pip install -r aura_ia_mcp/requirements.txt; fi
+        
+    - name: Start Docker Compose services
+      run: |
+        docker-compose up -d --build
+        echo "Waiting for services to start..."
+        sleep 60
+        docker-compose ps
+        
+    - name: Check service health
+      run: |
+        echo "Checking Gateway health..."
+        curl -f http://localhost:9200/healthz || echo "Gateway not ready"
+        echo "Checking ML Backend health..."
+        curl -f http://localhost:9201/health || echo "ML Backend not ready"
+        echo "Checking Qdrant health..."
+        curl -f http://localhost:9202/ || echo "Qdrant not ready"
+        
+    - name: Run integration tests
+      run: |
+        pytest tests/test_integration_enterprise.py -v \
+          --tb=short \
+          --durations=10 \
+          -x
+      env:
+        GATEWAY_URL: http://localhost:9200
+        ML_BACKEND_URL: http://localhost:9201
+        RAG_URL: http://localhost:9202
+        DASHBOARD_URL: http://localhost:9205
+        ROLE_ENGINE_URL: http://localhost:9206
+        
+    - name: Run governance tests
+      run: |
+        pytest tests/test_governance_compliance.py -v \
+          --tb=short \
+          --durations=10
+          
+    - name: Collect Docker logs on failure
+      if: failure()
+      run: |
+        docker-compose logs > docker-compose-logs.txt
+        
+    - name: Upload Docker logs
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: docker-compose-logs
+        path: docker-compose-logs.txt
+        retention-days: 7
+        
+    - name: Cleanup Docker
+      if: always()
+      run: |
+        docker-compose down -v

@@ -1,0 +1,64 @@
+---
+# HPA for mcp-server (CPU-based scaling)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mcp-server-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mcp-server
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+
+---
+# KEDA ScaledObject for task-engine (queue-based scaling)
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: task-engine-keda
+  namespace: default
+spec:
+  scaleTargetRef:
+    name: task-engine
+  minReplicaCount: 1
+  maxReplicaCount: 20
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus:9090
+        metricName: queue_depth
+        query: sum(queue_depth{service="task-engine"})
+        threshold: '10'
+    - type: cpu
+      metricType: Utilization
+      metadata:
+        value: '75'

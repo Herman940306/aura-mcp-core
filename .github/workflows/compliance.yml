@@ -1,0 +1,64 @@
+name: PRD Compliance & Gating
+
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Verify PRD Alignment
+        run: |
+          python scripts/verify_prd_alignment.py --ci
+
+      - name: Structural Audit
+        run: |
+          python scripts/audit_structure.py
+
+      - name: Enforce No Transient Artifacts (PRD Hygiene)
+        if: github.event_name == 'push'
+        run: |
+          python scripts/check_transient_artifacts.py
+
+      - name: Enforce SAFE MODE Transition Policy
+        env:
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: |
+          python scripts/check_safe_mode_transition.py
+
+      - name: Run Gating & Policy Tests
+        run: |
+          pytest -q tests/test_policy_gateway.py tests/test_safe_mode_gating.py tests/test_training_policy.py
+
+      - name: Show Last Audit Entries (if any)
+        run: |
+          if [ -f logs/security_audit.jsonl ]; then
+            echo "### Audit Log (last 50 lines)" >> "$GITHUB_STEP_SUMMARY"
+            tail -n 50 logs/security_audit.jsonl >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No audit log generated." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload Logs Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs/
+          if-no-files-found: ignore

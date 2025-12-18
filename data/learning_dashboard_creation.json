@@ -1,0 +1,125 @@
+{
+  "session_id": "dashboard_creation_20251115",
+  "timestamp": "2025-11-15T04:30:00Z",
+  "project": "KIRO_MCP HTML Dashboard",
+  "creator": "Herman Swanepoel",
+  "learning_type": "dashboard_design_and_implementation",
+  "key_learnings": [
+    {
+      "topic": "HTML Dashboard Structure",
+      "lesson": "Created professional monitoring dashboard with sidebar, main content, and chat bar",
+      "components": [
+        "Live Activity Sidebar (left, 350px)",
+        "Main Content Area (center)",
+        "Chat Bar (bottom)",
+        "Footer (bottom-left corner)"
+      ]
+    },
+    {
+      "topic": "Theme Colors - Kiro IDE Style",
+      "lesson": "Use dark theme matching Kiro IDE for professional look",
+      "colors": {
+        "background": "#1e1e1e",
+        "sidebar": "#252526",
+        "cards": "#252526",
+        "items": "#2d2d30",
+        "borders": "#3e3e42",
+        "accent_cyan": "#00d4ff",
+        "accent_bright": "#00ffff",
+        "purple_glow": "#8A2BE2, #9333EA"
+      }
+    },
+    {
+      "topic": "Logo and Header Design",
+      "lesson": "Logo above, text in bordered box below with purple pulsing glow",
+      "specifications": {
+        "logo_size": "180px",
+        "logo_border": "4px solid cyan",
+        "text_box_size": "0.75em font",
+        "text_box_padding": "5px 15px",
+        "glow_animation": "3s purple pulse"
+      }
+    },
+    {
+      "topic": "Activity Sidebar - Static Items",
+      "lesson": "NO constant updates - items are static once created",
+      "rules": [
+        "Limit to 5 items maximum",
+        "Oldest drops out when new arrives",
+        "Show timestamp, not live duration",
+        "Severity-based colors: cyan (normal), orange (warning), red (error)",
+        "NO pulsing or flashing animations"
+      ]
+    },
+    {
+      "topic": "Footer Positioning",
+      "lesson": "Small horizontal footer in bottom-left corner",
+      "specifications": {
+        "position": "fixed bottom-left",
+        "layout": "horizontal (one line)",
+        "spacing": "12px gap between items",
+        "separators": "pipes (|) with reduced opacity",
+        "content": "Version | Creator | Docs | Help"
+      }
+    },
+    {
+      "topic": "User Preferences - Critical",
+      "lesson": "Herman wants NO flashing/pulsing effects on activity items",
+      "rules": [
+        "Remove all pulse animations from activity items",
+        "Remove glow effects from running items",
+        "Keep items completely static",
+        "Only update list when new item added (not every second)",
+        "Logo and header CAN have purple glow pulse"
+      ]
+    },
+    {
+      "topic": "Spacing and Layout",
+      "lesson": "Proper spacing is CRITICAL for professional look",
+      "rules": [
+        "Use flexbox with gap property for even spacing",
+        "Separate elements with proper margins",
+        "Use span elements for separators",
+        "Test spacing visually before confirming"
+      ]
+    }
+  ],
+  "technical_implementation": {
+    "sidebar": {
+      "width": "350px",
+      "position": "fixed left",
+      "sections": ["header", "activity_list", "stats", "footer"]
+    },
+    "activity_tracking": {
+      "max_items": 5,
+      "update_frequency": "on_new_item_only",
+      "data_structure": {
+        "id": "timestamp",
+        "tool": "string",
+        "details": "string",
+        "status": "running|completed|failed",
+        "severity": "normal|warning|error",
+        "timestamp": "time_string"
+      }
+    },
+    "chat_bar": {
+      "position": "fixed bottom",
+      "left_offset": "350px (sidebar width)",
+      "components": ["dropdown", "input", "send_button"]
+    }
+  },
+  "common_mistakes_to_avoid": [
+    "Don't make items update every second - causes flashing",
+    "Don't use pulse animations on activity items",
+    "Don't make footer vertical - keep it horizontal",
+    "Don't forget to remove logos when asked",
+    "Don't use small gaps - 12px minimum for readability",
+    "Always test spacing visually"
+  ],
+  "success_criteria": {
+    "visual": "Clean, professional, no flashing",
+    "functional": "Static items, proper queue management",
+    "theme": "Dark Kiro IDE colors throughout",
+    "spacing": "Even, readable, not cramped"
+  }
+}

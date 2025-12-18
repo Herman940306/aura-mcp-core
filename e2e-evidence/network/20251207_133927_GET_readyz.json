@@ -1,0 +1,10 @@
+{
+  "endpoint": "/readyz",
+  "method": "GET",
+  "timestamp": "2025-12-07T13:39:27.113752",
+  "request": null,
+  "response": {
+    "status_code": 404
+  },
+  "status_code": 404
+}

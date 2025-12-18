@@ -1,0 +1,419 @@
+# =============================================================================
+# Aura IA MCP Helm Chart - Default Values
+# Canonical Architecture (PRD v3.0)
+# =============================================================================
+
+# Global configuration
+global:
+  namespace: aura-ia
+  imageRegistry: ""  # Override for private registries
+  imagePullSecrets: []
+
+# -----------------------------------------------------------------------------
+# Aura IA Gateway (Port 9200)
+# -----------------------------------------------------------------------------
+gateway:
+  enabled: true
+  name: aura-ia-gateway
+  replicaCount: 2
+
+  image:
+    repository: aura-ia/gateway
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 9200
+    targetPort: 8000
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+  env:
+    IDE_AGENTS_ULTRA_ENABLED: "true"
+    MCP_HOST: "0.0.0.0"
+    MCP_PORT: "8000"
+    MCP_TRANSPORT: "sse"
+    OTEL_ENABLED: "false"
+
+  # Health probes
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  readinessProbe:
+    httpGet:
+      path: /readyz
+      port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+
+  # HPA configuration
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+# -----------------------------------------------------------------------------
+# Aura IA ML Backend (Port 9201)
+# -----------------------------------------------------------------------------
+ml:
+  enabled: true
+  name: aura-ia-ml
+  replicaCount: 2
+
+  image:
+    repository: aura-ia/ml-backend
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 9201
+    targetPort: 8001
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "4000m"
+      memory: "8Gi"
+
+  env:
+    BACKEND_HOST: "0.0.0.0"
+    BACKEND_PORT: "8001"
+    EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+    EMBEDDING_DEVICE: "cpu"
+    RERANK_ENABLED: "0"
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8001
+    initialDelaySeconds: 60
+    periodSeconds: 20
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8001
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+
+# -----------------------------------------------------------------------------
+# Aura IA RAG - Qdrant (Ports 9202/9203)
+# -----------------------------------------------------------------------------
+rag:
+  enabled: true
+  name: aura-ia-rag
+
+  # Use external Qdrant chart or built-in
+  external:
+    enabled: false
+    host: ""
+    port: 6333
+
+  # Built-in Qdrant
+  replicaCount: 1
+
+  image:
+    repository: qdrant/qdrant
+    tag: "v1.11.3"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    httpPort: 9202
+    grpcPort: 9203
+    targetHttpPort: 6333
+    targetGrpcPort: 6334
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+
+  persistence:
+    enabled: true
+    storageClass: ""
+    size: 10Gi
+
+# -----------------------------------------------------------------------------
+# Aura IA Dashboard (Port 9205)
+# -----------------------------------------------------------------------------
+dashboard:
+  enabled: true
+  name: aura-ia-dashboard
+  replicaCount: 1
+
+  image:
+    repository: aura-ia/dashboard
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 9205
+    targetPort: 80
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+
+# -----------------------------------------------------------------------------
+# Aura IA Role Engine - ARE+ (Port 9206)
+# -----------------------------------------------------------------------------
+roleEngine:
+  enabled: false  # Enable when ready
+  name: aura-ia-role-engine
+  replicaCount: 1
+
+  image:
+    repository: aura-ia/role-engine
+    tag: "latest"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 9206
+    targetPort: 9206
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# -----------------------------------------------------------------------------
+# Secrets
+# -----------------------------------------------------------------------------
+secrets:
+  create: true
+  name: aura-ia-secrets
+  # Values should be provided via --set or external secret management
+  githubToken: ""
+
+# -----------------------------------------------------------------------------
+# ConfigMap
+# -----------------------------------------------------------------------------
+configMap:
+  name: aura-ia-config
+  data:
+    IDE_AGENTS_REQUEST_TIMEOUT: "30"
+    IDE_AGENTS_READY_CACHE_TTL: "5"
+    ANOMALY_THRESHOLD_RATE_LIMITED: "10"
+    ANOMALY_THRESHOLD_APPROVAL_REQUESTED: "20"
+    ANOMALY_THRESHOLD_TOOL_FAILURE: "15"
+
+# -----------------------------------------------------------------------------
+# Ingress
+# -----------------------------------------------------------------------------
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: aura-ia.local
+      paths:
+        - path: /
+          pathType: Prefix
+          service: gateway
+  tls: []
+
+# -----------------------------------------------------------------------------
+# Network Policies
+# -----------------------------------------------------------------------------
+networkPolicy:
+  enabled: true
+
+# -----------------------------------------------------------------------------
+# Service Account & RBAC
+# -----------------------------------------------------------------------------
+serviceAccount:
+  create: true
+  name: aura-ia-sa
+  annotations: {}
+
+rbac:
+  create: true
+
+# -----------------------------------------------------------------------------
+# Pod Disruption Budget
+# -----------------------------------------------------------------------------
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# -----------------------------------------------------------------------------
+# Monitoring (Prometheus/Grafana)
+# -----------------------------------------------------------------------------
+monitoring:
+  enabled: false
+  prometheus:
+    port: 9204
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+
+# -----------------------------------------------------------------------------
+# KEDA Autoscaling (Queue-based)
+# -----------------------------------------------------------------------------
+keda:
+  enabled: false
+  prometheusAddress: "http://prometheus-server:9090"
+
+  mlBackend:
+    enabled: true
+    pollingInterval: 15
+    cooldownPeriod: 300
+    minReplicas: 1
+    maxReplicas: 10
+    queueDepthThreshold: 10
+    cpuThreshold: 70
+
+  gateway:
+    enabled: true
+    pollingInterval: 10
+    cooldownPeriod: 180
+    minReplicas: 2
+    maxReplicas: 20
+    requestsPerSecondThreshold: 100
+    connectionsThreshold: 500
+
+# -----------------------------------------------------------------------------
+# Feature Flags
+# -----------------------------------------------------------------------------
+features:
+  rateLimiting:
+    enabled: true
+    requestsPerMinute: 100
+  metrics:
+    enabled: true
+  tracing:
+    enabled: false
+  safeMode:
+    enabled: true
+    violationThreshold: 5
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+logging:
+  level: "INFO"
+  format: "json"
+
+# -----------------------------------------------------------------------------
+# Observability
+# -----------------------------------------------------------------------------
+observability:
+  otelEndpoint: "http://otel-collector:4317"
+
+# -----------------------------------------------------------------------------
+# Ingress Extended Configuration
+# -----------------------------------------------------------------------------
+ingress:
+  enabled: false
+  className: "nginx"
+  host: "api.aura-ia.local"
+  dashboardHost: "dashboard.aura-ia.local"
+  annotations: {}
+  tls:
+    enabled: false
+    clusterIssuer: "letsencrypt-prod"
+  rateLimiting:
+    enabled: true
+    rps: "100"
+    connections: "50"
+
+# -----------------------------------------------------------------------------
+# Pod Disruption Budgets
+# -----------------------------------------------------------------------------
+gateway:
+  pdb:
+    minAvailable: 1
+
+ml:
+  pdb:
+    minAvailable: 1
+  persistence:
+    enabled: false
+    accessMode: ReadWriteOnce
+    storageClass: ""
+    size: 10Gi
+
+rag:
+  pdb:
+    minAvailable: 1
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    storageClass: ""
+    size: 20Gi
+
+# -----------------------------------------------------------------------------
+# Canary Deployment (Argo Rollouts)
+# -----------------------------------------------------------------------------
+canary:
+  enabled: false
+  prometheus:
+    address: "http://prometheus-server:9090"
+
+# -----------------------------------------------------------------------------
+# Chaos Engineering (Chaos Mesh)
+# -----------------------------------------------------------------------------
+chaos:
+  enabled: false
+  experiments:
+    networkDelay:
+      enabled: false
+      duration: "30s"
+      delay: "100ms"
+      cron: "@hourly"
+    podFailure:
+      enabled: false
+      duration: "60s"
+      cron: "0 */2 * * *"
+    cpuStress:
+      enabled: false
+      duration: "60s"
+      workers: 2
+      load: 50
+      cron: "0 */4 * * *"
+    ioDelay:
+      enabled: false
+      duration: "30s"
+      delay: "50ms"
+      percent: 50
+    httpFault:
+      enabled: false
+      duration: "30s"
+      cron: "0 */6 * * *"
+  workflow:
+    enabled: false

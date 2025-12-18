@@ -1,0 +1,13 @@
+{
+  "endpoint": "/chat/continuity",
+  "method": "POST",
+  "timestamp": "2025-12-07T14:19:43.501513",
+  "request": {
+    "conversation_id": "e2e-continuity-1765109960.54385"
+  },
+  "response": {
+    "response1_status": 200,
+    "response2_status": 200
+  },
+  "status_code": 200
+}

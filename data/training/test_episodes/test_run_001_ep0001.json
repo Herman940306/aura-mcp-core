@@ -1,0 +1,42 @@
+{
+  "episode_id": "test_run_001_ep0001",
+  "run_id": "test_run_001",
+  "episode_number": 1,
+  "started_at": "2025-11-29T22:23:43.609550",
+  "completed_at": "2025-11-29T22:23:43.611556",
+  "status": "completed",
+  "task_description": "Test episode",
+  "context": {
+    "test": true
+  },
+  "actions": [
+    {
+      "timestamp": "2025-11-29T22:23:43.611556",
+      "type": "test_action",
+      "data": {
+        "key": "value"
+      }
+    }
+  ],
+  "outcomes": [
+    {
+      "timestamp": "2025-11-29T22:23:43.611556",
+      "type": "test_outcome",
+      "data": {
+        "result": "success"
+      }
+    }
+  ],
+  "metrics": {
+    "tokens_used": 100,
+    "inference_time_ms": 0.0,
+    "changes_proposed": 0,
+    "changes_accepted": 0,
+    "rag_queries": 2,
+    "llm_calls": 0,
+    "error_count": 0
+  },
+  "metadata": {
+    "test": "complete"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "tool_name": "null_values",
+  "timestamp": "2025-12-07T13:46:33.589012",
+  "status": "handled",
+  "request": {
+    "message": null
+  },
+  "response": {
+    "status_code": 400
+  }
+}

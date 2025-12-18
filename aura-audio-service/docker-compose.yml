@@ -1,0 +1,40 @@
+services:
+
+  vosk:
+    image: alphacep/kaldi-vosk-server:latest
+    container_name: vosk
+    command: python3 /opt/vosk-server/websocket/asr_server.py /opt/vosk-model-small-en-us-0.15
+    ports:
+      - "2700:2700"
+    volumes:
+      - ./models/vosk/vosk-model-small-en-us-0.15:/opt/vosk-model-small-en-us-0.15
+    restart: unless-stopped
+
+  coqui:
+    image: ghcr.io/coqui-ai/tts:latest
+    container_name: coqui
+    entrypoint: ["tts-server"]
+    command: ["--model_name", "tts_models/multilingual/multi-dataset/xtts_v2", "--port", "5002", "--use_cuda", "false"]
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./models/coqui:/root/.local/share/tts
+      - ./models/voices:/voices
+    restart: unless-stopped
+
+  audio:
+    build:
+      context: ./audio_service
+    container_name: aura-audio
+    env_file:
+      - ./audio_service/.env
+    environment:
+      - VOICES_DIR=/app/voices
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./models/voices:/app/voices
+    depends_on:
+      - vosk
+      - coqui
+    restart: unless-stopped

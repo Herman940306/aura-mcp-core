@@ -1,0 +1,80 @@
+# Environment variables (contains secrets)
+.env
+*.env
+.env.local
+.env.*.local
+
+# Pre-sanitization backup (NEVER commit)
+aura_backup_pre_sanitization/
+_pre_sanitization_backup/
+
+# Private documentation (contains secrets/IPs)
+docs/private/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.log
+
+# Logs and telemetry
+logs/*.jsonl
+logs/*.log
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large model files (download via scripts/download_*.py)
+model_artifacts/*.gguf
+model_artifacts/vosk-model-*/
+model_artifacts/*/am/
+model_artifacts/*/graph/
+model_artifacts/*/ivector/
+aura-audio-service/models/vosk/*/
+aura-audio-service/models/coqui/*/*.pth
+
+# E2E test artifacts (videos, large files)
+e2e-evidence/videos/
+e2e-evidence/**/*.webm
+*.webm
+
+# Large image files
+**/*ChatGPT*.png
+**/*Logo*.jpg

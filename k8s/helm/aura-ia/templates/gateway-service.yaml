@@ -1,0 +1,21 @@
+{{- if .Values.gateway.enabled }}
+# =============================================================================
+# Aura IA Gateway Service
+# Port: 9200 (Canonical)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.gateway.name }}
+  labels:
+    {{- include "aura-ia.gateway.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.gateway.service.type }}
+  ports:
+    - port: {{ .Values.gateway.service.port }}
+      targetPort: {{ .Values.gateway.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "aura-ia.gateway.selectorLabels" . | nindent 4 }}
+{{- end }}

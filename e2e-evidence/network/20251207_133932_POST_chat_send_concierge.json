@@ -1,0 +1,14 @@
+{
+  "endpoint": "/chat/send/concierge",
+  "method": "POST",
+  "timestamp": "2025-12-07T13:39:32.033921",
+  "request": {
+    "message": "Test message in concierge mode",
+    "conversation_id": "e2e-mode-test-concierge",
+    "mode": "concierge"
+  },
+  "response": {
+    "status_code": 200
+  },
+  "status_code": 200
+}

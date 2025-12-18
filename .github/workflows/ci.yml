@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  security-events: write
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || true
+          pip install pytest pip-audit safety
+      - name: Run tests
+        run: |
+          pytest -q || exit 1
+      - name: Pip audit
+        run: |
+          pip-audit || true
+      - name: License & safety scan
+        run: |
+          bash scripts/security_scan.sh || true
+      - name: Upload telemetry artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: telemetry-logs
+          path: logs/*.jsonl

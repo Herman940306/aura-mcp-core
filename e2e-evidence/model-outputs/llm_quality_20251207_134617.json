@@ -1,0 +1,14 @@
+{
+  "test": "llm_quality",
+  "prompt": "Tell me something interesting about space.",
+  "response": "Did you know that the Sun is not a solid object? It's actually composed of roughly 75% hydrogen gas and 24.85% helium, with the remaining 0.15% made up of heavier elements. The Sun generates energy through nuclear fusion in its core.<",
+  "validation": {
+    "passed": true,
+    "message": "LLM response quality valid",
+    "details": {
+      "length": 234,
+      "word_count": 41,
+      "errors": []
+    }
+  }
+}

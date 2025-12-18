@@ -1,0 +1,17 @@
+{
+  "tool_name": "general_chat",
+  "timestamp": "2025-12-07T13:10:37.775057",
+  "status": "passed",
+  "request": {
+    "message": "Hello, how are you?",
+    "conversation_id": "e2e-test-general"
+  },
+  "response": {
+    "response": "Hello! I'm here to assist you. How can I help today?",
+    "tool_calls": [],
+    "conversation_id": "e2e-test-general",
+    "mode": "general",
+    "llm_used": true,
+    "success": true
+  }
+}

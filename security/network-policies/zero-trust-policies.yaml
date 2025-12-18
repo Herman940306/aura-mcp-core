@@ -1,0 +1,347 @@
+# =============================================================================
+# Aura IA Kubernetes Network Policies - Zero Trust Security
+# Default: Deny All. Explicit: Allow only required traffic.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Default Deny All Ingress/Egress in Namespace
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: zero-trust
+spec:
+  podSelector: {}  # Applies to ALL pods in namespace
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# -----------------------------------------------------------------------------
+# Allow DNS Resolution (Required for all pods)
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: dns
+spec:
+  podSelector: {}  # All pods
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# -----------------------------------------------------------------------------
+# Gateway: External Ingress + Internal Egress to ML/RAG
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gateway-policy
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    app.kubernetes.io/component: gateway
+    security.aura-ia.io/policy: gateway
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aura-ia-gateway
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow external traffic (from Ingress controller)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allow health checks from kubelet
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0  # Kubelet can be from any node
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # To ML Backend
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-ml
+      ports:
+        - protocol: TCP
+          port: 8001
+    # To RAG/Qdrant
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-rag
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+    # To Prometheus (metrics)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+---
+# -----------------------------------------------------------------------------
+# ML Backend: Only accepts from Gateway
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ml-backend-policy
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    app.kubernetes.io/component: ml
+    security.aura-ia.io/policy: ml-backend
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aura-ia-ml
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only Gateway can access ML Backend
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-gateway
+      ports:
+        - protocol: TCP
+          port: 8001
+    # Dashboard can read metrics
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-dashboard
+      ports:
+        - protocol: TCP
+          port: 8001
+  egress:
+    # To RAG/Qdrant for vector operations
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-rag
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+    # To external model APIs (OpenAI, Anthropic, etc.)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# -----------------------------------------------------------------------------
+# RAG/Qdrant: Only accepts from Gateway and ML Backend
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: rag-policy
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    app.kubernetes.io/component: rag
+    security.aura-ia.io/policy: rag
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aura-ia-rag
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # From Gateway
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-gateway
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+    # From ML Backend
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-ml
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+  egress:
+    # Qdrant only needs DNS (for cluster mode, if used)
+    []
+
+---
+# -----------------------------------------------------------------------------
+# Dashboard: External Ingress + Internal Egress to Gateway/ML
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: dashboard-policy
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    app.kubernetes.io/component: dashboard
+    security.aura-ia.io/policy: dashboard
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aura-ia-dashboard
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow external traffic (from Ingress controller)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    # To Gateway for API calls
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-gateway
+      ports:
+        - protocol: TCP
+          port: 8000
+    # To ML Backend for direct metrics
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-ml
+      ports:
+        - protocol: TCP
+          port: 8001
+
+---
+# -----------------------------------------------------------------------------
+# Role Engine: Internal Only
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: role-engine-policy
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    app.kubernetes.io/component: role-engine
+    security.aura-ia.io/policy: role-engine
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: aura-ia-role-engine
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only Gateway can access Role Engine
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-gateway
+      ports:
+        - protocol: TCP
+          port: 9206
+  egress:
+    # To Gateway for callbacks
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-gateway
+      ports:
+        - protocol: TCP
+          port: 8000
+    # To ML Backend for model access
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: aura-ia-ml
+      ports:
+        - protocol: TCP
+          port: 8001
+
+---
+# -----------------------------------------------------------------------------
+# Allow Prometheus Scraping (Ingress to all pods on metrics port)
+# -----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: aura-ia
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: aura-ia
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9204  # Metrics port

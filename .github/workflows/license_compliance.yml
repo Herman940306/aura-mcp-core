@@ -1,0 +1,23 @@
+name: License Compliance
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+jobs:
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt pip-licenses
+      - run: pip-licenses --format=json --output-file=license_report.json
+      - name: Check disallowed licenses
+        run: |
+          python scripts/check_licenses.py license_report.json || exit 1
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: license_report
+          path: license_report.json

@@ -1,0 +1,76 @@
+{
+    "name": "model_management",
+    "version": "1.0.0",
+    "description": "Manage cloud and local AI models - list, health check, budget tracking, recommendations",
+    "inputs": {
+        "type": "object",
+        "properties": {
+            "action": {
+                "type": "string",
+                "description": "Management action to perform",
+                "enum": [
+                    "list_models",
+                    "get_model_info",
+                    "health_check",
+                    "budget_stats",
+                    "recommend_model"
+                ]
+            },
+            "model_id": {
+                "type": "string",
+                "description": "Model ID for get_model_info action"
+            },
+            "task_type": {
+                "type": "string",
+                "description": "Task type for recommend_model (code, chat, analysis, translation)",
+                "enum": [
+                    "code",
+                    "chat",
+                    "analysis",
+                    "translation",
+                    "general"
+                ]
+            },
+            "prefer_free": {
+                "type": "boolean",
+                "default": true,
+                "description": "Prefer free tier models in recommendations"
+            },
+            "context_size": {
+                "type": "integer",
+                "description": "Required context size in tokens (for recommendations)"
+            }
+        },
+        "required": [
+            "action"
+        ]
+    },
+    "outputs": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "models": {
+                "type": "array",
+                "description": "List of available models (for list_models)"
+            },
+            "model_info": {
+                "type": "object",
+                "description": "Model details (for get_model_info)"
+            },
+            "health": {
+                "type": "object",
+                "description": "Health status (for health_check)"
+            },
+            "budget": {
+                "type": "object",
+                "description": "Budget statistics (for budget_stats)"
+            },
+            "recommendation": {
+                "type": "object",
+                "description": "Model recommendation (for recommend_model)"
+            }
+        }
+    }
+}

@@ -1,0 +1,223 @@
+# =============================================================================
+# Aura IA MCP - Production Values Override
+# Use: helm install aura-ia ./aura-ia -f values-production.yaml
+# =============================================================================
+
+global:
+  namespace: aura-ia-prod
+  imageRegistry: "your-registry.io/"
+  environment: production
+
+# =============================================================================
+# Gateway - Production Configuration
+# =============================================================================
+gateway:
+  replicaCount: 3
+
+  image:
+    tag: "v1.1.0"  # Pin to specific version
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "2Gi"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  pdb:
+    minAvailable: 2
+
+# =============================================================================
+# ML Backend - Production Configuration
+# =============================================================================
+ml:
+  replicaCount: 3
+
+  image:
+    tag: "v1.1.0"
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "4Gi"
+    limits:
+      cpu: "8000m"
+      memory: "16Gi"
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+
+  persistence:
+    enabled: true
+    storageClass: "fast-ssd"
+    size: 50Gi
+
+  pdb:
+    minAvailable: 2
+
+# =============================================================================
+# RAG/Vector Store - Production Configuration
+# =============================================================================
+rag:
+  replicaCount: 2
+
+  image:
+    tag: "v1.11.3"
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2Gi"
+    limits:
+      cpu: "4000m"
+      memory: "8Gi"
+
+  persistence:
+    enabled: true
+    storageClass: "fast-ssd"
+    size: 100Gi
+
+  pdb:
+    minAvailable: 1
+
+# =============================================================================
+# Dashboard - Production Configuration
+# =============================================================================
+dashboard:
+  replicaCount: 2
+
+  image:
+    tag: "v1.1.0"
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+# =============================================================================
+# Role Engine - Production Configuration
+# =============================================================================
+roleEngine:
+  enabled: true
+  replicaCount: 2
+
+  image:
+    tag: "v1.1.0"
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "1Gi"
+
+# =============================================================================
+# Secrets - External Secret Management Recommended
+# =============================================================================
+secrets:
+  create: false  # Use external secrets operator
+  name: aura-ia-secrets-prod
+
+# =============================================================================
+# Ingress - Production with TLS
+# =============================================================================
+ingress:
+  enabled: true
+  className: "nginx"
+  host: "api.aura-ia.example.com"
+  dashboardHost: "dashboard.aura-ia.example.com"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+  tls:
+    enabled: true
+    clusterIssuer: "letsencrypt-prod"
+  rateLimiting:
+    enabled: true
+    rps: "200"
+    connections: "100"
+
+# =============================================================================
+# Network Policies - Strict in Production
+# =============================================================================
+networkPolicy:
+  enabled: true
+
+# =============================================================================
+# KEDA - Production Autoscaling
+# =============================================================================
+keda:
+  enabled: true
+  prometheusAddress: "http://prometheus-server.monitoring:9090"
+
+  mlBackend:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    queueDepthThreshold: 5
+
+  gateway:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 30
+    requestsPerSecondThreshold: 200
+
+# =============================================================================
+# Canary Deployments
+# =============================================================================
+canary:
+  enabled: true
+  prometheus:
+    address: "http://prometheus-server.monitoring:9090"
+
+# =============================================================================
+# Chaos Engineering - Disabled by default in production
+# =============================================================================
+chaos:
+  enabled: false
+
+# =============================================================================
+# Feature Flags
+# =============================================================================
+features:
+  rateLimiting:
+    enabled: true
+    requestsPerMinute: 200
+  metrics:
+    enabled: true
+  tracing:
+    enabled: true
+  safeMode:
+    enabled: true
+    violationThreshold: 3
+
+# =============================================================================
+# Logging - Production
+# =============================================================================
+logging:
+  level: "INFO"
+  format: "json"
+
+# =============================================================================
+# Observability
+# =============================================================================
+observability:
+  otelEndpoint: "http://otel-collector.monitoring:4317"

@@ -1,0 +1,16 @@
+# GPU Override for Docker Desktop (Windows/WSL2)
+# Usage: docker compose -f docker-compose.yml -f docker-compose.gpu.yml up -d aura-ia-ml
+
+services:
+  aura-ia-ml:
+    # For Docker Compose v2.x with GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu, compute, utility]
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility

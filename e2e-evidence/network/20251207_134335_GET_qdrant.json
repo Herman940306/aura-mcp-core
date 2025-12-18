@@ -1,0 +1,10 @@
+{
+  "endpoint": "qdrant/",
+  "method": "GET",
+  "timestamp": "2025-12-07T13:43:35.084857",
+  "request": null,
+  "response": {
+    "status_code": 200
+  },
+  "status_code": 200
+}

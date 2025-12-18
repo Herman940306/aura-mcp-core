@@ -1,0 +1,14 @@
+{
+  "endpoint": "qdrant/collections",
+  "method": "GET",
+  "timestamp": "2025-12-07T14:34:08.541480",
+  "request": null,
+  "response": {
+    "result": {
+      "collections": []
+    },
+    "status": "ok",
+    "time": 6.284e-06
+  },
+  "status_code": 200
+}

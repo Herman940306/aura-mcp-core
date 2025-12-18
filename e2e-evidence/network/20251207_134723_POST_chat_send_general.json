@@ -1,0 +1,14 @@
+{
+  "endpoint": "/chat/send/general",
+  "method": "POST",
+  "timestamp": "2025-12-07T13:47:23.373604",
+  "request": {
+    "message": "Test message in general mode",
+    "conversation_id": "e2e-mode-test-general",
+    "mode": "general"
+  },
+  "response": {
+    "status_code": 200
+  },
+  "status_code": 200
+}

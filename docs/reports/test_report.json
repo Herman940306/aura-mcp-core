@@ -1,0 +1,263 @@
+{
+  "timestamp": "2025-11-14T09:32:33.076103",
+  "total_tests": 22,
+  "passed_tests": 22,
+  "failed_tests": 0,
+  "total_duration_ms": 5532.3545932769775,
+  "performance_metrics": {
+    "average_latency_ms": 160.74374589053068,
+    "min_latency_ms": 0.0,
+    "max_latency_ms": 677.4358749389648,
+    "total_duration_ms": 5532.3545932769775,
+    "tests_per_second": 3.9766069996190807,
+    "by_category": {
+      "Core": {
+        "passed": 11,
+        "failed": 0
+      },
+      "ML": {
+        "passed": 4,
+        "failed": 0
+      },
+      "GitHub": {
+        "passed": 3,
+        "failed": 0
+      },
+      "Error Handling": {
+        "passed": 4,
+        "failed": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "name": "Health Tool",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "version": "v0.1",
+        "ultra_enabled": true
+      }
+    },
+    {
+      "name": "Catalog List Entities",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 5.843162536621094,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "Catalog Get Doc",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "Resource List",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "resource_count": 3,
+        "expected_found": [
+          "repo.graph",
+          "kb.snippet",
+          "build.logs"
+        ]
+      }
+    },
+    {
+      "name": "Resource Get repo.graph",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_type": "dict",
+        "content_size": 26
+      }
+    },
+    {
+      "name": "Resource Get kb.snippet",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_type": "str",
+        "content_size": 132
+      }
+    },
+    {
+      "name": "Resource Get build.logs",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_type": "str",
+        "content_size": 57
+      }
+    },
+    {
+      "name": "Prompt List",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "prompt_count": 6,
+        "expected_found": [
+          "/diff_review",
+          "/test_failures",
+          "/hotfix_plan",
+          "/rank_github_repos",
+          "/rank_github_all",
+          "/rank_top_bug_prs"
+        ]
+      }
+    },
+    {
+      "name": "Prompt Get /diff_review",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {
+        "content_length": 252
+      }
+    },
+    {
+      "name": "Command Dry Run",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Command Explain",
+      "category": "Core",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "ML Analyze Emotion (Happy)",
+      "category": "ML",
+      "passed": true,
+      "duration_ms": 370.94640731811523,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "ML Analyze Emotion (Sad)",
+      "category": "ML",
+      "passed": true,
+      "duration_ms": 385.27894020080566,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "ML Get Predictions",
+      "category": "ML",
+      "passed": true,
+      "duration_ms": 373.8086223602295,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "ML Get Learning Insights",
+      "category": "ML",
+      "passed": true,
+      "duration_ms": 376.1143684387207,
+      "error": null,
+      "warning": "Backend unavailable (expected for local testing)",
+      "details": {}
+    },
+    {
+      "name": "GitHub Repos",
+      "category": "GitHub",
+      "passed": true,
+      "duration_ms": 673.1252670288086,
+      "error": null,
+      "warning": "GitHub API not available (token missing/invalid)",
+      "details": {}
+    },
+    {
+      "name": "GitHub Rank Repos",
+      "category": "GitHub",
+      "passed": true,
+      "duration_ms": 673.8097667694092,
+      "error": null,
+      "warning": "GitHub API not available (token missing/invalid)",
+      "details": {}
+    },
+    {
+      "name": "GitHub Rank All",
+      "category": "GitHub",
+      "passed": true,
+      "duration_ms": 677.4358749389648,
+      "error": null,
+      "warning": "GitHub API not available (token missing/invalid)",
+      "details": {}
+    },
+    {
+      "name": "Invalid Tool Name",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Invalid Arguments",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Rate Limiting",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    },
+    {
+      "name": "Approval Workflow",
+      "category": "Error Handling",
+      "passed": true,
+      "duration_ms": 0.0,
+      "error": null,
+      "warning": null,
+      "details": {}
+    }
+  ]
+}

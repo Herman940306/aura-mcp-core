@@ -1,0 +1,11 @@
+{
+  "tool_name": "long_message",
+  "timestamp": "2025-12-07T13:46:29.591938",
+  "status": "handled",
+  "request": {
+    "message_length": 5000
+  },
+  "response": {
+    "status_code": 200
+  }
+}

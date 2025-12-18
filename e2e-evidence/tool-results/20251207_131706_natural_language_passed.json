@@ -1,0 +1,11 @@
+{
+  "tool_name": "natural_language",
+  "timestamp": "2025-12-07T13:17:06.462451",
+  "status": "passed",
+  "request": {
+    "message": "weather in Pretoria"
+  },
+  "response": {
+    "response_text": "Hey! It's currently **27.1\u00b0C** in Pretoria with partly cloudy \u26c5 and a gentle breeze (11.8 km/h from the northwest) . Perfect weather to be outside! \ud83c\udf1e"
+  }
+}

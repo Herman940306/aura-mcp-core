@@ -1,0 +1,24 @@
+{
+  "name": "chat_structure",
+  "timestamp": "2025-12-07T13:17:08.829676",
+  "passed": true,
+  "message": "Chat response structure valid",
+  "details": {
+    "fields_present": [
+      "response",
+      "tool_calls",
+      "conversation_id",
+      "mode",
+      "llm_used",
+      "success"
+    ]
+  },
+  "data": {
+    "response": "Hi there! Ready to assist with any MCP-related queries. What do you need help with?",
+    "tool_calls": [],
+    "conversation_id": "e2e-api-test-1",
+    "mode": "general",
+    "llm_used": true,
+    "success": true
+  }
+}

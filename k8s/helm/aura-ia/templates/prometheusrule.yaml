@@ -1,0 +1,289 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    prometheus: aura-ia
+    role: alert-rules
+spec:
+  groups:
+    # ==========================================================================
+    # Availability Alerts
+    # ==========================================================================
+    - name: aura-ia-availability
+      interval: 30s
+      rules:
+        - alert: AuraGatewayDown
+          expr: up{job=~".*gateway.*"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            service: gateway
+          annotations:
+            summary: "Aura IA Gateway is unavailable"
+            description: "The Gateway service has been down for more than 2 minutes."
+            runbook_url: "https://docs.aura-ia.local/runbooks/gateway-down"
+
+        - alert: AuraMLBackendDown
+          expr: up{job=~".*ml.*"} == 0
+          for: 3m
+          labels:
+            severity: critical
+            service: ml-backend
+          annotations:
+            summary: "Aura IA ML Backend is unavailable"
+            description: "The ML Backend service has been down for more than 3 minutes."
+            runbook_url: "https://docs.aura-ia.local/runbooks/ml-down"
+
+        - alert: AuraRAGServiceDown
+          expr: up{job=~".*rag.*"} == 0
+          for: 3m
+          labels:
+            severity: warning
+            service: rag
+          annotations:
+            summary: "Aura IA RAG Service is unavailable"
+            description: "The RAG service has been down for more than 3 minutes."
+            runbook_url: "https://docs.aura-ia.local/runbooks/rag-down"
+
+    # ==========================================================================
+    # Latency Alerts
+    # ==========================================================================
+    - name: aura-ia-latency
+      interval: 30s
+      rules:
+        - alert: AuraHighP99Latency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(http_request_duration_seconds_bucket{namespace="{{ .Release.Namespace }}"}[5m])) by (le, service)
+            ) > 2
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High P99 latency detected in {{ "{{" }} $labels.service {{ "}}" }}"
+            description: "P99 latency is {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}s (threshold: 2s)"
+
+        - alert: AuraCriticalLatency
+          expr: |
+            histogram_quantile(0.99,
+              sum(rate(http_request_duration_seconds_bucket{namespace="{{ .Release.Namespace }}"}[5m])) by (le, service)
+            ) > 5
+          for: 3m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Critical latency in {{ "{{" }} $labels.service {{ "}}" }}"
+            description: "P99 latency is {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}s (threshold: 5s)"
+
+        - alert: AuraMLInferenceSlowdown
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(aura_ml_inference_duration_seconds_bucket[5m])) by (le, model)
+            ) > 3
+          for: 5m
+          labels:
+            severity: warning
+            service: ml-backend
+          annotations:
+            summary: "ML inference slowdown for model {{ "{{" }} $labels.model {{ "}}" }}"
+            description: "P95 inference latency is {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}s"
+
+    # ==========================================================================
+    # Error Rate Alerts
+    # ==========================================================================
+    - name: aura-ia-errors
+      interval: 30s
+      rules:
+        - alert: AuraHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}", status=~"5.."}[5m]))
+            / sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}"}[5m])) > 0.01
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High error rate in Aura IA (>1%)"
+            description: "Error rate is {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}%"
+            runbook_url: "https://docs.aura-ia.local/runbooks/high-error-rate"
+
+        - alert: AuraServiceErrorRate
+          expr: |
+            sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}", status=~"5.."}[5m])) by (service)
+            / sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}"}[5m])) by (service) > 0.05
+          for: 3m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Elevated error rate in {{ "{{" }} $labels.service {{ "}}" }}"
+            description: "Error rate is {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}% (>5%)"
+
+        - alert: AuraRAGQueryFailures
+          expr: |
+            rate(aura_rag_query_failures_total[5m])
+            / rate(aura_rag_queries_total[5m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            service: rag
+          annotations:
+            summary: "High RAG query failure rate"
+            description: "RAG query failure rate is {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}% (>10%)"
+
+    # ==========================================================================
+    # Resource Alerts
+    # ==========================================================================
+    - name: aura-ia-resources
+      interval: 60s
+      rules:
+        - alert: AuraHighMemoryUsage
+          expr: |
+            container_memory_usage_bytes{namespace="{{ .Release.Namespace }}"}
+            / container_spec_memory_limit_bytes{namespace="{{ .Release.Namespace }}"} > 0.85
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High memory usage in {{ "{{" }} $labels.container {{ "}}" }}"
+            description: "Memory usage is {{ "{{" }} $value | printf \"%.0f\" {{ "}}" }}% of limit"
+
+        - alert: AuraCriticalMemoryUsage
+          expr: |
+            container_memory_usage_bytes{namespace="{{ .Release.Namespace }}"}
+            / container_spec_memory_limit_bytes{namespace="{{ .Release.Namespace }}"} > 0.95
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Critical memory usage in {{ "{{" }} $labels.container {{ "}}" }}"
+            description: "Memory usage is {{ "{{" }} $value | printf \"%.0f\" {{ "}}" }}% of limit - OOM risk!"
+
+        - alert: AuraCPUThrottling
+          expr: |
+            rate(container_cpu_cfs_throttled_seconds_total{namespace="{{ .Release.Namespace }}"}[5m]) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "CPU throttling in {{ "{{" }} $labels.container {{ "}}" }}"
+            description: "Container is being throttled {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }}s/s"
+
+        - alert: AuraPodRestarting
+          expr: increase(kube_pod_container_status_restarts_total{namespace="{{ .Release.Namespace }}"}[1h]) > 3
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ "{{" }} $labels.pod {{ "}}" }} restarting frequently"
+            description: "Pod has restarted {{ "{{" }} $value {{ "}}" }} times in the last hour"
+
+    # ==========================================================================
+    # Queue & Throughput Alerts
+    # ==========================================================================
+    - name: aura-ia-queues
+      interval: 30s
+      rules:
+        - alert: AuraMLQueueDepthHigh
+          expr: aura_ml_queue_depth > 100
+          for: 5m
+          labels:
+            severity: warning
+            service: ml-backend
+          annotations:
+            summary: "ML Backend queue is filling up"
+            description: "Queue depth is {{ "{{" }} $value {{ "}}" }} (threshold: 100)"
+
+        - alert: AuraMLQueueCritical
+          expr: aura_ml_queue_depth > 500
+          for: 2m
+          labels:
+            severity: critical
+            service: ml-backend
+          annotations:
+            summary: "ML Backend queue is critically full"
+            description: "Queue depth is {{ "{{" }} $value {{ "}}" }} - service degradation likely"
+
+        - alert: AuraApprovalBacklog
+          expr: aura_approval_pending_count > 50
+          for: 15m
+          labels:
+            severity: warning
+            service: role-engine
+          annotations:
+            summary: "Approval queue backlog"
+            description: "{{ "{{" }} $value {{ "}}" }} approvals pending"
+
+        - alert: AuraLowThroughput
+          expr: |
+            sum(rate(http_requests_total{namespace="{{ .Release.Namespace }}"}[5m])) < 1
+          for: 10m
+          labels:
+            severity: info
+          annotations:
+            summary: "Low request throughput"
+            description: "Request rate is {{ "{{" }} $value | printf \"%.2f\" {{ "}}" }} req/s"
+
+    # ==========================================================================
+    # Dual Model Engine Alerts
+    # ==========================================================================
+    - name: aura-ia-dual-model
+      interval: 30s
+      rules:
+        - alert: AuraDebateTimeout
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(aura_debate_duration_seconds_bucket[5m])) by (le)
+            ) > 30
+          for: 5m
+          labels:
+            severity: warning
+            service: ml-backend
+          annotations:
+            summary: "Dual-model debates taking too long"
+            description: "P95 debate duration is {{ "{{" }} $value | printf \"%.1f\" {{ "}}" }}s"
+
+        - alert: AuraLowConsensusRate
+          expr: |
+            sum(aura_debate_consensus_reached_total)
+            / sum(aura_debate_sessions_total) < 0.5
+          for: 30m
+          labels:
+            severity: info
+            service: ml-backend
+          annotations:
+            summary: "Low consensus rate in debates"
+            description: "Only {{ "{{" }} $value | printf \"%.0f\" {{ "}}" }}% of debates reach consensus"
+
+    # ==========================================================================
+    # Security Alerts
+    # ==========================================================================
+    - name: aura-ia-security
+      interval: 30s
+      rules:
+        - alert: AuraHighRiskActionsSpike
+          expr: |
+            rate(aura_approvals_total{risk_level="high"}[5m]) >
+            2 * avg_over_time(rate(aura_approvals_total{risk_level="high"}[5m])[1h:5m])
+          for: 5m
+          labels:
+            severity: warning
+            service: role-engine
+          annotations:
+            summary: "Spike in high-risk actions"
+            description: "High-risk action rate is elevated"
+
+        - alert: AuraApprovalDenialSpike
+          expr: |
+            sum(rate(aura_approvals_total{status="denied"}[5m]))
+            / sum(rate(aura_approvals_total[5m])) > 0.3
+          for: 10m
+          labels:
+            severity: warning
+            service: role-engine
+          annotations:
+            summary: "High approval denial rate"
+            description: "{{ "{{" }} $value | printf \"%.0f\" {{ "}}" }}% of approvals are being denied"
+{{- end }}

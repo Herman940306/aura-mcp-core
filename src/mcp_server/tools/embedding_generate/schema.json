@@ -1,0 +1,11 @@
+{
+    "name": "embedding_generate",
+    "version": "0.1.0",
+    "inputs": {
+        "text": "string"
+    },
+    "outputs": {
+        "vector": "array",
+        "dim": "number"
+    }
+}

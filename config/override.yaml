@@ -1,0 +1,49 @@
+# Human Override Configuration
+# This file is referenced by PRD Section 9.11
+# Only the PRD Owner (Herman Swanepoel) may modify this file
+
+# OVERRIDE STATUS
+# Set to true ONLY during authorized emergency maintenance
+HUMAN_OVERRIDE_ACTIVE: false
+
+# OVERRIDE DETAILS (required when HUMAN_OVERRIDE_ACTIVE is true)
+override:
+  # Unique identifier for this override session
+  id: null
+
+  # ISO-8601 timestamp when override was activated
+  activated_at: null
+
+  # ISO-8601 timestamp when override will automatically expire
+  expires_at: null
+
+  # Maximum duration is 24 hours per PRD 9.11.2
+  duration_minutes: null
+
+  # Mandatory: Why is this override needed?
+  reason: null
+
+  # Which components are affected?
+  scope: []
+
+  # Which specific rules are being suspended?
+  rules_suspended: []
+
+  # CANNOT BE SUSPENDED (per PRD 9.11.2):
+  # - security_audit_logging
+  # - pii_redaction
+  # - enclave_attestation
+
+  # GPG signature of the override request
+  signature: null
+
+# AUDIT TRAIL
+# All override activations are logged to logs/security_audit.jsonl
+# and logs/prd_audit.jsonl with level CRITICAL
+
+# POST-OVERRIDE CHECKLIST (per PRD 9.11.4):
+# [ ] Full audit log review within 24 hours
+# [ ] Incident report documented
+# [ ] All suspended rules re-enabled
+# [ ] Full regression suite passed
+# [ ] PRD updated if gap discovered

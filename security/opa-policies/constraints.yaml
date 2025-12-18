@@ -1,0 +1,185 @@
+# =============================================================================
+# Aura IA OPA Gatekeeper Constraints
+# Apply templates with specific parameters for Aura IA namespace
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Constraint: Require Resource Limits
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIARequireResourceLimits
+metadata:
+  name: aura-ia-require-resource-limits
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia", "aura-ia-prod", "aura-ia-staging"]
+
+---
+# -----------------------------------------------------------------------------
+# Constraint: Deny Privileged Containers
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIADenyPrivileged
+metadata:
+  name: aura-ia-deny-privileged
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia", "aura-ia-prod", "aura-ia-staging"]
+
+---
+# -----------------------------------------------------------------------------
+# Constraint: Deny Root User
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIADenyRoot
+metadata:
+  name: aura-ia-deny-root
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: warn  # Warn first, then enforce
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia", "aura-ia-prod", "aura-ia-staging"]
+  parameters:
+    allowedExceptions:
+      # Qdrant may need root for storage operations
+      - "qdrant"
+
+---
+# -----------------------------------------------------------------------------
+# Constraint: Require Labels
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIARequireLabels
+metadata:
+  name: aura-ia-require-labels
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia", "aura-ia-prod", "aura-ia-staging"]
+  parameters:
+    labels:
+      - "app.kubernetes.io/name"
+      - "app.kubernetes.io/part-of"
+
+---
+# -----------------------------------------------------------------------------
+# Constraint: Allowed Registries
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIAAllowedRegistries
+metadata:
+  name: aura-ia-allowed-registries
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia-prod"]  # Only enforce in production
+  parameters:
+    allowedRegistries:
+      - "ghcr.io/aura-ia"
+      - "docker.io/qdrant"
+      - "docker.io/library"  # Official images
+
+---
+# -----------------------------------------------------------------------------
+# Constraint: Require Image Digest (Production only)
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIARequireImageDigest
+metadata:
+  name: aura-ia-require-digest
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: warn  # Warn in staging, enforce in prod
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia-prod"]
+  parameters:
+    exemptImages:
+      # Third-party images may not have digest
+      - "docker.io/qdrant"
+
+---
+# -----------------------------------------------------------------------------
+# Constraint: Deny Host Namespace
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIADenyHostNamespace
+metadata:
+  name: aura-ia-deny-host-namespace
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia", "aura-ia-prod", "aura-ia-staging"]
+
+---
+# -----------------------------------------------------------------------------
+# Constraint: Read-Only Root Filesystem
+# -----------------------------------------------------------------------------
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: AuraIAReadOnlyRootfs
+metadata:
+  name: aura-ia-readonly-rootfs
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  enforcementAction: warn  # Warn first, gradually enforce
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces: ["aura-ia-prod"]
+  parameters:
+    exemptContainers:
+      # Containers that need write access
+      - "qdrant"  # Needs to write to storage
+      - "ml-backend"  # Needs to write model cache

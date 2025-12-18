@@ -1,0 +1,358 @@
+# =============================================================================
+# Aura IA OPA Gatekeeper Constraint Templates
+# Policy-as-Code for Kubernetes Security
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Template: Require Resource Limits
+# Ensures all containers have CPU and memory limits
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-require-resource-limits
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: resource-limits
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIARequireResourceLimits
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            exemptImages:
+              type: array
+              items:
+                type: string
+              description: "Images exempt from this policy"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.requireresourcelimits
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.limits.cpu
+          msg := sprintf("Container '%v' must have CPU limits set", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not container.resources.limits.memory
+          msg := sprintf("Container '%v' must have memory limits set", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.initContainers[_]
+          not container.resources.limits.cpu
+          msg := sprintf("Init container '%v' must have CPU limits set", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.initContainers[_]
+          not container.resources.limits.memory
+          msg := sprintf("Init container '%v' must have memory limits set", [container.name])
+        }
+
+---
+# -----------------------------------------------------------------------------
+# Template: Deny Privileged Containers
+# Prevents containers from running in privileged mode
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-deny-privileged
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: deny-privileged
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIADenyPrivileged
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.denyprivileged
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          container.securityContext.privileged == true
+          msg := sprintf("Container '%v' is not allowed to run in privileged mode", [container.name])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.initContainers[_]
+          container.securityContext.privileged == true
+          msg := sprintf("Init container '%v' is not allowed to run in privileged mode", [container.name])
+        }
+
+---
+# -----------------------------------------------------------------------------
+# Template: Deny Root User
+# Ensures containers do not run as root
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-deny-root
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: deny-root
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIADenyRoot
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            allowedExceptions:
+              type: array
+              items:
+                type: string
+              description: "Container names allowed to run as root"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.denyroot
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not is_exception(container.name)
+          run_as_root(container)
+          msg := sprintf("Container '%v' must not run as root (runAsNonRoot: true required)", [container.name])
+        }
+
+        run_as_root(container) {
+          not container.securityContext.runAsNonRoot
+        }
+
+        run_as_root(container) {
+          container.securityContext.runAsUser == 0
+        }
+
+        is_exception(name) {
+          exceptions := object.get(input.parameters, "allowedExceptions", [])
+          exceptions[_] == name
+        }
+
+---
+# -----------------------------------------------------------------------------
+# Template: Require Labels
+# Ensures pods have required labels for tracking
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-require-labels
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: require-labels
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIARequireLabels
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            labels:
+              type: array
+              items:
+                type: string
+              description: "Required label keys"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.requirelabels
+
+        violation[{"msg": msg}] {
+          required := input.parameters.labels[_]
+          not input.review.object.metadata.labels[required]
+          msg := sprintf("Resource must have label '%v'", [required])
+        }
+
+---
+# -----------------------------------------------------------------------------
+# Template: Allowed Registries
+# Restricts container images to approved registries
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-allowed-registries
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: allowed-registries
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIAAllowedRegistries
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            allowedRegistries:
+              type: array
+              items:
+                type: string
+              description: "List of allowed container registries"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.allowedregistries
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not registry_allowed(container.image)
+          msg := sprintf("Container image '%v' is not from an allowed registry. Allowed: %v", [container.image, input.parameters.allowedRegistries])
+        }
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.initContainers[_]
+          not registry_allowed(container.image)
+          msg := sprintf("Init container image '%v' is not from an allowed registry. Allowed: %v", [container.image, input.parameters.allowedRegistries])
+        }
+
+        registry_allowed(image) {
+          allowed := input.parameters.allowedRegistries[_]
+          startswith(image, allowed)
+        }
+
+        # Allow images without registry (implicit docker.io)
+        registry_allowed(image) {
+          not contains(image, "/")
+          allowed := input.parameters.allowedRegistries[_]
+          allowed == "docker.io"
+        }
+
+---
+# -----------------------------------------------------------------------------
+# Template: Require Image Digest
+# Ensures images are referenced by digest, not tag
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-require-image-digest
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: require-digest
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIARequireImageDigest
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            exemptImages:
+              type: array
+              items:
+                type: string
+              description: "Images exempt from digest requirement"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.requireimagedigest
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not image_exempt(container.image)
+          not contains(container.image, "@sha256:")
+          msg := sprintf("Container image '%v' must use a digest (e.g., image@sha256:abc123)", [container.image])
+        }
+
+        image_exempt(image) {
+          exempt := input.parameters.exemptImages[_]
+          startswith(image, exempt)
+        }
+
+---
+# -----------------------------------------------------------------------------
+# Template: Deny Host Namespace
+# Prevents pods from using host namespaces
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-deny-host-namespace
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: deny-host-namespace
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIADenyHostNamespace
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.denyhostnamespace
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.hostNetwork == true
+          msg := "Pods are not allowed to use hostNetwork"
+        }
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.hostPID == true
+          msg := "Pods are not allowed to use hostPID"
+        }
+
+        violation[{"msg": msg}] {
+          input.review.object.spec.hostIPC == true
+          msg := "Pods are not allowed to use hostIPC"
+        }
+
+---
+# -----------------------------------------------------------------------------
+# Template: Read-Only Root Filesystem
+# Ensures containers have read-only root filesystem
+# -----------------------------------------------------------------------------
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: auraia-readonly-rootfs
+  labels:
+    app.kubernetes.io/part-of: aura-ia
+    security.aura-ia.io/policy: readonly-rootfs
+spec:
+  crd:
+    spec:
+      names:
+        kind: AuraIAReadOnlyRootfs
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            exemptContainers:
+              type: array
+              items:
+                type: string
+              description: "Containers exempt from read-only rootfs"
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package auraia.readonlyrootfs
+
+        violation[{"msg": msg}] {
+          container := input.review.object.spec.containers[_]
+          not is_exempt(container.name)
+          not container.securityContext.readOnlyRootFilesystem
+          msg := sprintf("Container '%v' must have readOnlyRootFilesystem: true", [container.name])
+        }
+
+        is_exempt(name) {
+          exempt := object.get(input.parameters, "exemptContainers", [])
+          exempt[_] == name
+        }

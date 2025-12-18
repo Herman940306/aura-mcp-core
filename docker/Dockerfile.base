@@ -1,0 +1,98 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AURA IA MCP - Base Image
+# ═══════════════════════════════════════════════════════════════════════════════
+# Shared Python 3.11 base with all common dependencies
+# Supports both CPU-only and CUDA variants via build args
+#
+# Usage:
+#   CPU:  docker build -f Dockerfile.base -t aura-base:cpu --build-arg CUDA_ENABLED=false .
+#   GPU:  docker build -f Dockerfile.base -t aura-base:cuda --build-arg CUDA_ENABLED=true .
+# ═══════════════════════════════════════════════════════════════════════════════
+
+ARG CUDA_ENABLED=false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 1a: CPU Base Image
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.11-slim AS base-cpu
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    AURA_DEVICE=cpu
+
+WORKDIR /app
+
+# Install native libs for audio, ML, and build tools
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    curl wget netcat-traditional ca-certificates git \
+    libsndfile1 espeak-ng ffmpeg \
+    build-essential gcc g++ cmake \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 1b: CUDA Base Image
+# ─────────────────────────────────────────────────────────────────────────────
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04 AS base-cuda
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    AURA_DEVICE=cuda \
+    CUDA_HOME=/usr/local/cuda \
+    PATH="/usr/local/cuda/bin:${PATH}" \
+    LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+
+WORKDIR /app
+
+# Install Python 3.11 and native libs
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-venv python3.11-dev \
+    curl wget netcat-traditional ca-certificates git \
+    libsndfile1 espeak-ng ffmpeg \
+    build-essential gcc g++ cmake \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install CUDA-enabled llama-cpp-python from pre-built wheel
+RUN python -m pip install --no-cache-dir --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir llama-cpp-python \
+    --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu121
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 2: Select base based on CUDA_ENABLED arg
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base-${CUDA_ENABLED:+cuda}${CUDA_ENABLED:-cpu} AS base-selected
+
+# This is a workaround - Docker doesn't support conditional FROM well
+# We'll use a different approach in the final images
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Stage 3: Install Python dependencies (shared)
+# ─────────────────────────────────────────────────────────────────────────────
+FROM base-cpu AS deps-cpu
+
+COPY requirements-base.txt ./
+RUN pip install --no-cache-dir -r requirements-base.txt
+
+FROM base-cuda AS deps-cuda
+
+# Fix blinker conflict in Ubuntu base image
+RUN pip install --no-cache-dir --ignore-installed blinker
+
+COPY requirements-base.txt ./
+RUN pip install --no-cache-dir -r requirements-base.txt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Final: Export the selected variant
+# ─────────────────────────────────────────────────────────────────────────────
+# Use: docker build --target deps-cpu or --target deps-cuda

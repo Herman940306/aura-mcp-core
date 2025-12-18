@@ -1,0 +1,13 @@
+{
+  "name": "KIRO_MCP Dashboard",
+  "description": "Open KIRO_MCP monitoring dashboard",
+  "icon": "$(dashboard)",
+  "trigger": "manual",
+  "command": "cmd.exe",
+  "args": ["/c", "start", "", "C:\\Users\\herma\\AppData\\Local\\Programs\\Kiro\\mcp-servers\\kiro_mcp\\monitor\\dashboard.html"],
+  "showInStatusBar": true,
+  "statusBarText": "$(dashboard) Monitor",
+  "statusBarTooltip": "Open KIRO_MCP Dashboard",
+  "statusBarAlignment": "right",
+  "statusBarPriority": 99
+}

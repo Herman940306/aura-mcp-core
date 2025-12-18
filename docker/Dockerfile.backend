@@ -1,0 +1,76 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AURA IA MCP - ML Backend (GPU-enabled)
+# ═══════════════════════════════════════════════════════════════════════════════
+# ML inference service with CUDA GPU auto-detection
+# Uses pre-built llama-cpp-python CUDA wheels for fast builds
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04 AS base
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    AURA_DEVICE=auto \
+    CUDA_HOME=/usr/local/cuda \
+    PATH="/usr/local/cuda/bin:${PATH}" \
+    LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+
+WORKDIR /app
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Install Python 3.11 and system dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    python3.11 python3.11-venv python3.11-dev python3-pip \
+    curl wget netcat-traditional ca-certificates \
+    libsndfile1 espeak-ng ffmpeg \
+    build-essential gcc g++ cmake \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Install Python dependencies
+# ─────────────────────────────────────────────────────────────────────────────
+# Bootstrap pip for Python 3.11
+RUN python3.11 -m ensurepip --upgrade \
+    && python3.11 -m pip install --no-cache-dir --upgrade pip setuptools wheel
+
+# Install llama-cpp-python with CUDA from pre-built wheel
+# Download directly from GitHub releases to ensure CUDA version
+# Note: libcuda.so.1 is provided by NVIDIA runtime, not available at build time
+RUN pip install --no-cache-dir \
+    https://github.com/abetlen/llama-cpp-python/releases/download/v0.3.16-cu121/llama_cpp_python-0.3.16-cp311-cp311-linux_x86_64.whl
+
+# Fix Ubuntu base image conflicts
+RUN pip install --no-cache-dir --ignore-installed blinker
+
+# Install base requirements
+COPY requirements-base.txt ./
+RUN pip install --no-cache-dir -r requirements-base.txt
+
+# Install backend-specific requirements
+COPY requirements-backend.txt ./
+RUN pip install --no-cache-dir -r requirements-backend.txt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy application code
+# ─────────────────────────────────────────────────────────────────────────────
+COPY src ./src
+COPY data ./data
+COPY config ./config
+
+ENV PYTHONPATH=/app/src \
+    BACKEND_HOST=0.0.0.0 \
+    BACKEND_PORT=8001
+
+EXPOSE 8001
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+    CMD curl -f http://localhost:8001/health || exit 1
+
+CMD ["python", "-m", "mcp_server.real_backend_server"]

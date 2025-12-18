@@ -1,0 +1,23 @@
+{
+  "tool_name": "response_consistency",
+  "timestamp": "2025-12-07T13:46:36.014059",
+  "status": "passed",
+  "request": {
+    "messages": [
+      "what's the weather in Cape Town",
+      "what time is it",
+      "hello"
+    ]
+  },
+  "response": {
+    "common_keys": [
+      "conversation_id",
+      "tool_calls",
+      "response",
+      "llm_used",
+      "mode",
+      "success"
+    ],
+    "response_count": 3
+  }
+}

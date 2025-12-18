@@ -1,0 +1,224 @@
+# =============================================================================
+# Aura IA Chaos Engineering - Chaos Mesh Experiments
+# Controlled failure injection for resilience testing
+# =============================================================================
+
+{{- if .Values.chaos.enabled }}
+
+# -----------------------------------------------------------------------------
+# Network Delay Experiment
+# Inject latency between services to test timeout handling
+# -----------------------------------------------------------------------------
+{{- if .Values.chaos.experiments.networkDelay.enabled }}
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-network-delay
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    chaos-type: network-delay
+spec:
+  action: delay
+  mode: all
+  selector:
+    namespaces:
+      - {{ .Release.Namespace }}
+    labelSelectors:
+      app.kubernetes.io/part-of: aura-ia
+  delay:
+    latency: {{ .Values.chaos.experiments.networkDelay.delay | default "100ms" }}
+    correlation: "100"
+    jitter: "10ms"
+  duration: {{ .Values.chaos.experiments.networkDelay.duration | default "30s" }}
+  scheduler:
+    cron: {{ .Values.chaos.experiments.networkDelay.cron | default "@hourly" | quote }}
+{{- end }}
+
+# -----------------------------------------------------------------------------
+# Pod Failure Experiment
+# Kill pods to test recovery and failover
+# -----------------------------------------------------------------------------
+{{- if .Values.chaos.experiments.podFailure.enabled }}
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: PodChaos
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-pod-failure
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    chaos-type: pod-failure
+spec:
+  action: pod-kill
+  mode: one
+  selector:
+    namespaces:
+      - {{ .Release.Namespace }}
+    labelSelectors:
+      app.kubernetes.io/part-of: aura-ia
+      app.kubernetes.io/component: gateway
+  duration: {{ .Values.chaos.experiments.podFailure.duration | default "60s" }}
+  gracePeriod: 0
+  scheduler:
+    cron: {{ .Values.chaos.experiments.podFailure.cron | default "0 */2 * * *" | quote }}
+{{- end }}
+
+# -----------------------------------------------------------------------------
+# CPU Stress Experiment
+# Stress CPU to test autoscaling response
+# -----------------------------------------------------------------------------
+{{- if .Values.chaos.experiments.cpuStress.enabled }}
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: StressChaos
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-cpu-stress
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    chaos-type: cpu-stress
+spec:
+  mode: one
+  selector:
+    namespaces:
+      - {{ .Release.Namespace }}
+    labelSelectors:
+      app.kubernetes.io/part-of: aura-ia
+      app.kubernetes.io/component: ml
+  stressors:
+    cpu:
+      workers: {{ .Values.chaos.experiments.cpuStress.workers | default 2 }}
+      load: {{ .Values.chaos.experiments.cpuStress.load | default 50 }}
+  duration: {{ .Values.chaos.experiments.cpuStress.duration | default "60s" }}
+  scheduler:
+    cron: {{ .Values.chaos.experiments.cpuStress.cron | default "0 */4 * * *" | quote }}
+{{- end }}
+
+# -----------------------------------------------------------------------------
+# IO Chaos Experiment
+# Inject I/O delays to test data layer resilience
+# -----------------------------------------------------------------------------
+{{- if .Values.chaos.experiments.ioDelay.enabled }}
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: IOChaos
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-io-delay
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    chaos-type: io-delay
+spec:
+  action: latency
+  mode: one
+  selector:
+    namespaces:
+      - {{ .Release.Namespace }}
+    labelSelectors:
+      app.kubernetes.io/part-of: aura-ia
+      app.kubernetes.io/component: rag
+  volumePath: /qdrant/storage
+  delay: {{ .Values.chaos.experiments.ioDelay.delay | default "50ms" }}
+  percent: {{ .Values.chaos.experiments.ioDelay.percent | default 50 }}
+  duration: {{ .Values.chaos.experiments.ioDelay.duration | default "30s" }}
+{{- end }}
+
+# -----------------------------------------------------------------------------
+# HTTP Chaos Experiment
+# Return errors to test error handling
+# -----------------------------------------------------------------------------
+{{- if .Values.chaos.experiments.httpFault.enabled }}
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: HTTPChaos
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-http-fault
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    chaos-type: http-fault
+spec:
+  mode: all
+  selector:
+    namespaces:
+      - {{ .Release.Namespace }}
+    labelSelectors:
+      app.kubernetes.io/part-of: aura-ia
+      app.kubernetes.io/component: gateway
+  target: Response
+  port: {{ .Values.gateway.service.targetPort }}
+  method: GET
+  path: /api/*
+  abort: true
+  duration: {{ .Values.chaos.experiments.httpFault.duration | default "30s" }}
+  scheduler:
+    cron: {{ .Values.chaos.experiments.httpFault.cron | default "0 */6 * * *" | quote }}
+{{- end }}
+
+# -----------------------------------------------------------------------------
+# Workflow: Comprehensive Resilience Test
+# Run multiple chaos experiments in sequence
+# -----------------------------------------------------------------------------
+{{- if .Values.chaos.workflow.enabled }}
+---
+apiVersion: chaos-mesh.org/v1alpha1
+kind: Workflow
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-resilience-workflow
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+spec:
+  entry: resilience-test
+  templates:
+    - name: resilience-test
+      templateType: Serial
+      deadline: 30m
+      children:
+        - network-delay-test
+        - pod-recovery-test
+        - stress-test
+
+    - name: network-delay-test
+      templateType: NetworkChaos
+      deadline: 5m
+      networkChaos:
+        action: delay
+        mode: all
+        selector:
+          namespaces:
+            - {{ .Release.Namespace }}
+          labelSelectors:
+            app.kubernetes.io/part-of: aura-ia
+        delay:
+          latency: "200ms"
+        duration: "3m"
+
+    - name: pod-recovery-test
+      templateType: PodChaos
+      deadline: 5m
+      podChaos:
+        action: pod-kill
+        mode: one
+        selector:
+          namespaces:
+            - {{ .Release.Namespace }}
+          labelSelectors:
+            app.kubernetes.io/part-of: aura-ia
+            app.kubernetes.io/component: gateway
+        duration: "2m"
+
+    - name: stress-test
+      templateType: StressChaos
+      deadline: 5m
+      stressChaos:
+        mode: one
+        selector:
+          namespaces:
+            - {{ .Release.Namespace }}
+          labelSelectors:
+            app.kubernetes.io/part-of: aura-ia
+            app.kubernetes.io/component: ml
+        stressors:
+          cpu:
+            workers: 2
+            load: 80
+        duration: "3m"
+{{- end }}
+{{- end }}

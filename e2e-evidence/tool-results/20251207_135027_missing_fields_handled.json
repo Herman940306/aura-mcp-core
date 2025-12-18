@@ -1,0 +1,13 @@
+{
+  "tool_name": "missing_fields",
+  "timestamp": "2025-12-07T13:50:27.241114",
+  "status": "handled",
+  "request": {
+    "sent": {
+      "conversation_id": "test"
+    }
+  },
+  "response": {
+    "status_code": 400
+  }
+}

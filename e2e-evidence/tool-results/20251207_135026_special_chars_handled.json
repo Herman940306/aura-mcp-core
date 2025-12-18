@@ -1,0 +1,12 @@
+{
+  "tool_name": "special_chars",
+  "timestamp": "2025-12-07T13:50:26.821406",
+  "status": "handled",
+  "request": {
+    "message": "Hello! What's the weather? <script>alert('test')</script> \ud83c\udf24\ufe0f",
+    "conversation_id": "e2e-test-special-chars"
+  },
+  "response": {
+    "status_code": 200
+  }
+}

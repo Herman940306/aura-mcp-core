@@ -1,0 +1,62 @@
+# =============================================================================
+# Aura IA Ingress
+# External access via NGINX Ingress Controller
+# =============================================================================
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-ingress
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+  annotations:
+    {{- if .Values.ingress.tls.enabled }}
+    cert-manager.io/cluster-issuer: {{ .Values.ingress.tls.clusterIssuer | default "letsencrypt-prod" }}
+    {{- end }}
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    {{- if .Values.ingress.rateLimiting.enabled }}
+    nginx.ingress.kubernetes.io/limit-rps: "{{ .Values.ingress.rateLimiting.rps }}"
+    nginx.ingress.kubernetes.io/limit-connections: "{{ .Values.ingress.rateLimiting.connections }}"
+    {{- end }}
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "nginx" }}
+  {{- if .Values.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.host }}
+        {{- if .Values.ingress.dashboardHost }}
+        - {{ .Values.ingress.dashboardHost }}
+        {{- end }}
+      secretName: {{ include "aura-ia.fullname" . }}-tls
+  {{- end }}
+  rules:
+    # Main Gateway API
+    - host: {{ .Values.ingress.host }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.gateway.name }}
+                port:
+                  number: {{ .Values.gateway.service.port }}
+    {{- if .Values.ingress.dashboardHost }}
+    # Dashboard (separate subdomain)
+    - host: {{ .Values.ingress.dashboardHost }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.dashboard.name }}
+                port:
+                  number: {{ .Values.dashboard.service.port }}
+    {{- end }}
+{{- end }}

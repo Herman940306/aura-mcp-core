@@ -1,0 +1,14 @@
+{
+  "test": "llm_quality",
+  "prompt": "Tell me something interesting about space.",
+  "response": "Did you know that Venus has the longest day of any planet in our solar system? A single rotation on its axis takes about 243 Earth days, which is longer than its year (88 Earth days).",
+  "validation": {
+    "passed": true,
+    "message": "LLM response quality valid",
+    "details": {
+      "length": 183,
+      "word_count": 36,
+      "errors": []
+    }
+  }
+}

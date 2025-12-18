@@ -1,0 +1,158 @@
+# =============================================================================
+# Aura IA MCP - Development Values Override
+# Use: helm install aura-ia ./aura-ia -f values-dev.yaml
+# =============================================================================
+
+global:
+  namespace: aura-ia-dev
+  imageRegistry: ""
+  environment: development
+
+# =============================================================================
+# Gateway - Development Configuration
+# =============================================================================
+gateway:
+  replicaCount: 1
+
+  image:
+    tag: "latest"
+    pullPolicy: Always  # Always pull in dev
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  autoscaling:
+    enabled: false
+
+# =============================================================================
+# ML Backend - Development Configuration
+# =============================================================================
+ml:
+  replicaCount: 1
+
+  image:
+    tag: "latest"
+    pullPolicy: Always
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+
+  autoscaling:
+    enabled: false
+
+  persistence:
+    enabled: false  # Use emptyDir in dev
+
+# =============================================================================
+# RAG/Vector Store - Development Configuration
+# =============================================================================
+rag:
+  replicaCount: 1
+
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "256Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  persistence:
+    enabled: false  # Use emptyDir in dev
+
+# =============================================================================
+# Dashboard - Development Configuration
+# =============================================================================
+dashboard:
+  replicaCount: 1
+
+  image:
+    tag: "latest"
+    pullPolicy: Always
+
+# =============================================================================
+# Role Engine - Development
+# =============================================================================
+roleEngine:
+  enabled: true
+  replicaCount: 1
+
+  image:
+    tag: "latest"
+    pullPolicy: Always
+
+# =============================================================================
+# Secrets - Allow creation in dev
+# =============================================================================
+secrets:
+  create: true
+  name: aura-ia-secrets-dev
+
+# =============================================================================
+# Ingress - Local development
+# =============================================================================
+ingress:
+  enabled: false  # Use port-forward in dev
+
+# =============================================================================
+# Network Policies - Relaxed in dev
+# =============================================================================
+networkPolicy:
+  enabled: false  # Allow all traffic in dev
+
+# =============================================================================
+# KEDA - Disabled in dev
+# =============================================================================
+keda:
+  enabled: false
+
+# =============================================================================
+# Canary - Disabled in dev
+# =============================================================================
+canary:
+  enabled: false
+
+# =============================================================================
+# Chaos Engineering - Enabled for testing
+# =============================================================================
+chaos:
+  enabled: true
+  experiments:
+    networkDelay:
+      enabled: false
+    podFailure:
+      enabled: false
+    cpuStress:
+      enabled: false
+  workflow:
+    enabled: false
+
+# =============================================================================
+# Feature Flags - Dev friendly
+# =============================================================================
+features:
+  rateLimiting:
+    enabled: false
+  metrics:
+    enabled: true
+  tracing:
+    enabled: false
+  safeMode:
+    enabled: false
+
+# =============================================================================
+# Logging - Verbose in dev
+# =============================================================================
+logging:
+  level: "DEBUG"
+  format: "text"  # Human-readable in dev

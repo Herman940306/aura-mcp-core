@@ -1,0 +1,11 @@
+{
+    "name": "rag_query",
+    "version": "0.1.0",
+    "inputs": {
+        "query": "string"
+    },
+    "outputs": {
+        "results": "array",
+        "latency_ms": "number"
+    }
+}

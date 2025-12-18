@@ -1,0 +1,79 @@
+---
+# ServiceAccount: mcp-server-sa
+# Least-privilege service account for mcp-server
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mcp-server-sa
+  namespace: default
+
+---
+# Role: mcp-server-role
+# Read-only access to ConfigMaps and Secrets
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mcp-server-role
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+    resourceNames: ["mcp-secrets"]
+
+---
+# RoleBinding: mcp-server-binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mcp-server-binding
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: mcp-server-sa
+    namespace: default
+roleRef:
+  kind: Role
+  name: mcp-server-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ServiceAccount: ml-backend-sa
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ml-backend-sa
+  namespace: default
+
+---
+# Role: ml-backend-role
+# No cluster access needed (network-isolated compute)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ml-backend-role
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get"]
+    resourceNames: ["mcp-config"]
+
+---
+# RoleBinding: ml-backend-binding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ml-backend-binding
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: ml-backend-sa
+    namespace: default
+roleRef:
+  kind: Role
+  name: ml-backend-role
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,8 @@
+name: Port Compliance
+on: [push, pull_request]
+jobs:
+  port-map:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: grep -R "9200" -n aura_ia_mcp || true

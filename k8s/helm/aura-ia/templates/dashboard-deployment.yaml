@@ -1,0 +1,50 @@
+{{- if .Values.dashboard.enabled }}
+# =============================================================================
+# Aura IA Dashboard Deployment
+# Port: 9205 (Canonical)
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.dashboard.name }}
+  labels:
+    {{- include "aura-ia.dashboard.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.dashboard.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.dashboard.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aura-ia.dashboard.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aura-ia.serviceAccountName" . }}
+      containers:
+        - name: dashboard
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.dashboard.image.repository }}:{{ .Values.dashboard.image.tag }}"
+          imagePullPolicy: {{ .Values.dashboard.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.dashboard.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.dashboard.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+            - name: GATEWAY_URL
+              value: "http://{{ .Values.gateway.name }}:{{ .Values.gateway.service.port }}"
+            - name: ML_URL
+              value: "http://{{ .Values.ml.name }}:{{ .Values.ml.service.port }}"
+          {{- with .Values.dashboard.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.dashboard.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.dashboard.resources | nindent 12 }}
+{{- end }}

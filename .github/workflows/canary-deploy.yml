@@ -1,0 +1,123 @@
+name: Canary Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy'
+        required: true
+        type: string
+      traffic_percent:
+        description: 'Percentage of traffic to route to canary'
+        required: true
+        default: '10'
+        type: string
+      promotion_threshold:
+        description: 'Success rate threshold for auto-promotion (0-1)'
+        required: true
+        default: '0.95'
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  NAMESPACE: default
+
+jobs:
+  deploy-canary:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig
+          export KUBECONFIG=./kubeconfig
+
+      - name: Deploy canary variant
+        run: |
+          kubectl apply -f - <<EOF
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: mcp-server-canary
+            namespace: ${{ env.NAMESPACE }}
+            labels:
+              app: mcp-server
+              variant: canary
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: mcp-server
+                variant: canary
+            template:
+              metadata:
+                labels:
+                  app: mcp-server
+                  variant: canary
+              spec:
+                serviceAccountName: mcp-server-sa
+                containers:
+                - name: mcp-server
+                  image: ${{ env.REGISTRY }}/${{ github.repository }}/mcp-server:${{ inputs.image_tag }}
+                  ports:
+                  - containerPort: 8000
+                  env:
+                  - name: VARIANT
+                    value: "canary"
+          EOF
+
+      - name: Update traffic split
+        run: |
+          kubectl apply -f - <<EOF
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: mcp-server
+            namespace: ${{ env.NAMESPACE }}
+            annotations:
+              traffic.sidecar.istio.io/canary: "${{ inputs.traffic_percent }}"
+          spec:
+            selector:
+              app: mcp-server
+            ports:
+            - port: 8000
+              targetPort: 8000
+          EOF
+
+      - name: Monitor canary metrics
+        id: monitor
+        run: |
+          # Wait 5 minutes for metrics to accumulate
+          sleep 300
+          # Query Prometheus for success rate
+          SUCCESS_RATE=$(curl -s 'http://prometheus:9090/api/v1/query?query=rate(http_requests_total{variant="canary",status=~"2.."}[5m])/rate(http_requests_total{variant="canary"}[5m])' | jq '.data.result[0].value[1]' | tr -d '"')
+          echo "Canary success rate: $SUCCESS_RATE"
+          echo "success_rate=$SUCCESS_RATE" >> $GITHUB_OUTPUT
+
+      - name: Auto-promote or rollback
+        run: |
+          THRESHOLD=${{ inputs.promotion_threshold }}
+          RATE=${{ steps.monitor.outputs.success_rate }}
+          if (( $(echo "$RATE >= $THRESHOLD" | bc -l) )); then
+            echo "✅ Canary successful ($RATE >= $THRESHOLD) - promoting to stable"
+            kubectl set image deployment/mcp-server mcp-server=${{ env.REGISTRY }}/${{ github.repository }}/mcp-server:${{ inputs.image_tag }}
+            kubectl delete deployment mcp-server-canary
+            kubectl annotate service mcp-server traffic.sidecar.istio.io/canary-
+          else
+            echo "❌ Canary failed ($RATE < $THRESHOLD) - rolling back"
+            kubectl delete deployment mcp-server-canary
+            kubectl annotate service mcp-server traffic.sidecar.istio.io/canary-
+            exit 1
+          fi
+
+      - name: Notify status
+        if: always()
+        run: |
+          echo "Canary deployment ${{ steps.monitor.outputs.success_rate >= inputs.promotion_threshold && 'PROMOTED' || 'ROLLED BACK' }}"

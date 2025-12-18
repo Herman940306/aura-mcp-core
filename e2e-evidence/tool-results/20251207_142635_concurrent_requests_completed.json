@@ -1,0 +1,12 @@
+{
+  "tool_name": "concurrent_requests",
+  "timestamp": "2025-12-07T14:26:35.829926",
+  "status": "completed",
+  "request": {
+    "count": 3
+  },
+  "response": {
+    "success_count": 0,
+    "results": "[{'location': 'Johannesburg', 'error': 'Server disconnected without sending a response.'}, {'location': 'Cape Town', 'error': 'Server disconnected without sending a response.'}, {'location': 'Durban', 'error': 'Server disconnected without sending a response.'}]"
+  }
+}

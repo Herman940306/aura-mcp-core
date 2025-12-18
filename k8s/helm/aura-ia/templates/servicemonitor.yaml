@@ -1,0 +1,119 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    component: gateway
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.gateway.name }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - targetLabel: service
+          replacement: gateway
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-ml
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    component: ml
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.ml.name }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - targetLabel: service
+          replacement: ml-backend
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-rag
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    component: rag
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.rag.name }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - targetLabel: service
+          replacement: rag
+---
+{{- if .Values.roleEngine.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-role-engine
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+    component: role-engine
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.roleEngine.name }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: {{ .Values.monitoring.serviceMonitor.interval | default "15s" }}
+      scrapeTimeout: 10s
+      honorLabels: true
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - targetLabel: service
+          replacement: role-engine
+{{- end }}
+{{- end }}

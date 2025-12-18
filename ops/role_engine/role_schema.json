@@ -1,0 +1,23 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema#",
+  "title":"ARE Role Definition Schema",
+  "type":"object",
+  "required":["name","purpose","responsibilities","scoring_profile","version"],
+  "properties":{
+    "name":{"type":"string"},
+    "purpose":{"type":"string"},
+    "responsibilities":{"type":"array","items":{"type":"string"}},
+    "behaviors":{"type":"array","items":{"type":"string"}},
+    "interactions":{"type":"array","items":{"type":"string"}},
+    "scoring_profile":{
+      "type":"object",
+      "properties":{
+        "priority":{"type":"integer","minimum":1,"maximum":10},
+        "confidence_weight":{"type":"number","minimum":0.0,"maximum":1.0},
+        "risk_factor":{"type":"number","minimum":0.0,"maximum":1.0}
+      },
+      "required":["priority","confidence_weight","risk_factor"]
+    },
+    "version":{"type":"string"}
+  }
+}

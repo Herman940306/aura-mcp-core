@@ -1,0 +1,11 @@
+{
+  "tool_name": "wrong_type",
+  "timestamp": "2025-12-07T13:17:00.825190",
+  "status": "handled",
+  "request": {
+    "message_type": "int"
+  },
+  "response": {
+    "status_code": 500
+  }
+}

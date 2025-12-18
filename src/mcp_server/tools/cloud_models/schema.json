@@ -1,0 +1,100 @@
+{
+    "name": "cloud_models",
+    "version": "1.0.0",
+    "description": "Query cloud AI models (Google Gemini FREE TIER FIRST) with intelligent routing and resource offloading",
+    "inputs": {
+        "type": "object",
+        "properties": {
+            "prompt": {
+                "type": "string",
+                "description": "The prompt to send to the model"
+            },
+            "model": {
+                "type": "string",
+                "default": "gemini-1.5-flash",
+                "description": "Model ID (gemini-1.5-flash, deepseek-v3.1-671b, gpt-oss-120b, kimi-k2-1t, gemini-3-pro-preview)",
+                "enum": [
+                    "gemini-1.5-flash",
+                    "gemini-1.5-flash-8b",
+                    "gemini-2.0-flash-exp",
+                    "gemini-1.5-pro",
+                    "gemini-3-pro-preview",
+                    "minimax-m2",
+                    "kimi-k2-8k",
+                    "kimi-k2-32k",
+                    "kimi-k2-128k",
+                    "kimi-k2-1t",
+                    "qwen-turbo",
+                    "qwen-plus",
+                    "qwen-max",
+                    "qwen3-coder-480b",
+                    "deepseek-v3.1-671b",
+                    "gpt-oss-120b"
+                ]
+            },
+            "temperature": {
+                "type": "number",
+                "default": 0.3,
+                "minimum": 0,
+                "maximum": 2,
+                "description": "Generation temperature (0-2)"
+            },
+            "max_tokens": {
+                "type": "integer",
+                "default": 2048,
+                "minimum": 1,
+                "maximum": 32768,
+                "description": "Maximum output tokens"
+            },
+            "force_cloud": {
+                "type": "boolean",
+                "default": false,
+                "description": "Force cloud routing (bypass local Ollama)"
+            },
+            "system_instruction": {
+                "type": "string",
+                "description": "Optional system instruction for the model"
+            }
+        },
+        "required": [
+            "prompt"
+        ]
+    },
+    "outputs": {
+        "type": "object",
+        "properties": {
+            "response": {
+                "type": "string",
+                "description": "Generated text response"
+            },
+            "model": {
+                "type": "string",
+                "description": "Actual model used"
+            },
+            "provider": {
+                "type": "string",
+                "description": "Provider (google, minimax, moonshot, alibaba)"
+            },
+            "input_tokens": {
+                "type": "integer",
+                "description": "Input token count"
+            },
+            "output_tokens": {
+                "type": "integer",
+                "description": "Output token count"
+            },
+            "latency_ms": {
+                "type": "number",
+                "description": "Request latency in milliseconds"
+            },
+            "is_free_tier": {
+                "type": "boolean",
+                "description": "Whether free tier was used"
+            },
+            "routing": {
+                "type": "object",
+                "description": "Routing decision details"
+            }
+        }
+    }
+}

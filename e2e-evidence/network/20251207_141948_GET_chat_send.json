@@ -1,0 +1,10 @@
+{
+  "endpoint": "/chat/send",
+  "method": "GET",
+  "timestamp": "2025-12-07T14:19:48.177803",
+  "request": null,
+  "response": {
+    "status_code": 404
+  },
+  "status_code": 404
+}

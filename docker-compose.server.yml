@@ -1,0 +1,67 @@
+# docker-compose.server.yml
+# Override file for NAS server deployment
+# Uses EXISTING PostgreSQL (postgres:1432) and Ollama (ollama:11434) containers
+#
+# Usage: sudo docker compose -f docker-compose.yml -f docker-compose.server.yml up -d --build
+
+services:
+  # ============================================================================
+  # DISABLE: We use existing server containers instead
+  # ============================================================================
+  
+  # Disable Aura's PostgreSQL - use existing 'postgres' container
+  aura-ia-postgres:
+    profiles:
+      - disabled  # Won't start unless explicitly requested
+  
+  # Disable Aura's Ollama - use existing 'ollama' container  
+  aura-ia-ollama:
+    profiles:
+      - disabled  # Won't start unless explicitly requested
+
+  # ============================================================================
+  # OVERRIDE: Gateway connects to existing server services
+  # ============================================================================
+  
+  aura-ia-gateway:
+    depends_on:
+      aura-ia-ml:
+        condition: service_healthy
+      aura-ia-rag:
+        condition: service_started
+    # Removed: aura-ia-postgres, aura-ia-ollama (using external)
+    environment:
+      # PostgreSQL - Connect to EXISTING postgres container
+      # Container 'postgres' exposes 5432 internally, 1432 externally
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      POSTGRES_DB: ${POSTGRES_DB:-aura_db}
+      # Ollama - Connect to EXISTING ollama container
+      # Container 'ollama' exposes 11434 internally and externally
+      OLLAMA_BASE_URL: http://ollama:11434
+    external_links:
+      - postgres:postgres
+      - ollama:ollama
+    networks:
+      - mcp-network
+      - default  # Connect to default network where postgres/ollama live
+
+  aura-ia-ml:
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+    external_links:
+      - ollama:ollama
+    networks:
+      - mcp-network
+      - default
+
+# ============================================================================
+# Network Configuration
+# ============================================================================
+
+networks:
+  default:
+    external: true
+    name: bridge  # Or whatever network your existing containers use

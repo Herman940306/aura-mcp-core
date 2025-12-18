@@ -1,0 +1,16 @@
+{
+  "endpoint": "/chat/send/xss",
+  "method": "POST",
+  "timestamp": "2025-12-07T13:43:43.280507",
+  "request": {
+    "payloads": [
+      "<script>alert('xss')</script>",
+      "javascript:alert('xss')",
+      "<img src=x onerror=alert('xss')>"
+    ]
+  },
+  "response": {
+    "all_handled": true
+  },
+  "status_code": 200
+}

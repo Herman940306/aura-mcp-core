@@ -1,0 +1,25 @@
+{{- if .Values.roleEngine.enabled }}
+# =============================================================================
+# Aura IA Role Engine Service
+# Port: 9206 (Canonical)
+# =============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.roleEngine.name }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.roleEngine.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: role-engine
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  type: {{ .Values.roleEngine.service.type }}
+  ports:
+    - port: {{ .Values.roleEngine.service.port }}
+      targetPort: {{ .Values.roleEngine.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: {{ .Values.roleEngine.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

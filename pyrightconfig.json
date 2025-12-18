@@ -1,0 +1,21 @@
+{
+  "include": [
+    "mcp",
+    "ops",
+    "training",
+    "tools",
+    "aura_ia_mcp"
+  ],
+  "exclude": [
+    "**/temp",
+    "**/archive",
+    "**/__pycache__",
+    "**/.mypy_cache",
+    "**/.pytest_cache"
+  ],
+  "typeCheckingMode": "strict",
+  "reportMissingImports": "warning",
+  "reportInvalidTypeForm": "error",
+  "reportUnusedImport": "warning",
+  "useLibraryCodeForTypes": true
+}

@@ -1,0 +1,38 @@
+# =============================================================================
+# Aura IA PersistentVolumeClaims
+# Persistent storage for ML models and RAG data
+# =============================================================================
+
+{{- if and .Values.ml.enabled .Values.ml.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.ml.name }}-model-pvc
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.ml.persistence.accessMode | default "ReadWriteOnce" }}
+  storageClassName: {{ .Values.ml.persistence.storageClass | default "" | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.ml.persistence.size | default "10Gi" }}
+{{- end }}
+
+{{- if and .Values.rag.enabled .Values.rag.persistence.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.rag.name }}-storage-pvc
+  labels:
+    {{- include "aura-ia.rag.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.rag.persistence.accessMode | default "ReadWriteOnce" }}
+  storageClassName: {{ .Values.rag.persistence.storageClass | default "" | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.rag.persistence.size | default "20Gi" }}
+{{- end }}

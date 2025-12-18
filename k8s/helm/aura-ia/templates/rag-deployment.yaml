@@ -1,0 +1,55 @@
+{{- if .Values.rag.enabled }}
+# =============================================================================
+# Aura IA RAG/Vector Store Deployment (Qdrant)
+# Ports: 9202 (HTTP), 9203 (gRPC)
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.rag.name }}
+  labels:
+    {{- include "aura-ia.rag.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.rag.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.rag.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aura-ia.rag.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aura-ia.serviceAccountName" . }}
+      containers:
+        - name: qdrant
+          image: "{{ .Values.rag.image.repository }}:{{ .Values.rag.image.tag }}"
+          imagePullPolicy: {{ .Values.rag.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 6333
+              protocol: TCP
+            - name: grpc
+              containerPort: 6334
+              protocol: TCP
+          {{- with .Values.rag.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.rag.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.rag.resources | nindent 12 }}
+          volumeMounts:
+            - name: qdrant-storage
+              mountPath: /qdrant/storage
+      volumes:
+        - name: qdrant-storage
+          {{- if .Values.rag.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.rag.name }}-storage-pvc
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+{{- end }}

@@ -1,0 +1,324 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AURA IA MCP - Dashboard Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+# Configuration for dashboard WebSocket connections, monitoring, and feature flags
+# Last Updated: December 13, 2025
+# ═══════════════════════════════════════════════════════════════════════════════
+
+---
+# ─────────────────────────────────────────────────────────────────────────────
+# Dashboard Server Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+dashboard:
+  host: "0.0.0.0"
+  port: 8080
+  environment: "development" # development, staging, production
+  debug: false
+  cors_origins:
+    - "*" # In production, restrict to specific domains
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WebSocket Configuration (Task 4)
+# ─────────────────────────────────────────────────────────────────────────────
+websocket:
+  # Connection parameters
+  enabled: true
+  protocol: "ws" # ws or wss (with SSL)
+  host: "${WEBSOCKET_HOST:localhost}"
+  port: "${WEBSOCKET_PORT:8000}"
+  path: "/ws"
+
+  # Reconnection strategy
+  reconnect:
+    enabled: true
+    max_attempts: 10
+    initial_delay_ms: 1000 # Start with 1 second
+    max_delay_ms: 30000 # Cap at 30 seconds
+    backoff_multiplier: 1.5 # Exponential backoff: 1s → 1.5s → 2.25s → 3.38s...
+
+  # Connection timeouts
+  connect_timeout_ms: 5000 # 5 second timeout for initial connection
+  ping_interval_ms: 30000 # Send ping every 30 seconds
+  pong_timeout_ms: 10000 # Wait 10 seconds for pong response
+
+  # Message configuration
+  message_buffer_size: 1000 # Buffer up to 1000 messages if disconnected
+  max_message_size_bytes: 1048576 # 1MB max message size
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Real-time Update Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+updates:
+  # Update frequency (in milliseconds)
+  intervals:
+    system_metrics: 1000 # System CPU, RAM, disk every 1s
+    gpu_metrics: 2000 # GPU stats every 2s
+    database_metrics: 5000 # Database stats every 5s
+    model_status: 3000 # Model status updates every 3s
+    governance_data: 10000 # Governance/roles every 10s
+    chat_status: 500 # Chat status very frequently
+
+  # Batch updates for efficiency
+  batch_updates: true
+  batch_interval_ms: 500 # Batch updates sent every 500ms
+
+  # Compression
+  compression_enabled: true
+  compression_threshold_bytes: 1024 # Compress messages > 1KB
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Monitoring Configuration (Task 4)
+# ─────────────────────────────────────────────────────────────────────────────
+monitoring:
+  # System monitoring (psutil)
+  system:
+    enabled: true
+    cpu:
+      enabled: true
+      include_per_cpu: false # Per-CPU breakdown (expensive on many-core)
+      sample_interval_ms: 100
+    memory:
+      enabled: true
+      include_virtual: true # Include swap/virtual memory
+    disk:
+      enabled: true
+      monitor_paths:
+        - "/" # Monitor root filesystem
+        - "/data" # Monitor data partition if separate
+    network:
+      enabled: true
+      interfaces: [] # Empty = all interfaces, or specify ["eth0", "wlan0"]
+
+  # GPU monitoring (GPUtil) - Optional, requires NVIDIA GPU
+  gpu:
+    enabled: "${ENABLE_GPU_MONITORING:false}" # Set via environment variable
+    nvidia_only: true # Only support NVIDIA GPUs for now
+    sample_interval_ms: 500
+    include_processes: true # Show GPU processes and memory usage
+
+  # Temperature monitoring - Optional, system-dependent
+  temperature:
+    enabled: "${ENABLE_TEMPERATURE_MONITORING:false}" # Requires psutil with sensors
+    sample_interval_ms: 5000
+
+  # Performance thresholds for alerting
+  thresholds:
+    cpu_percent: 80 # Alert if CPU > 80%
+    memory_percent: 85 # Alert if RAM > 85%
+    disk_percent: 90 # Alert if disk > 90%
+    gpu_memory_percent: 95 # Alert if GPU RAM > 95%
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Backend API Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+backends:
+  # MCP Server (main backend)
+  mcp:
+    url: "${MCP_BACKEND_URL:http://localhost:8000}"
+    websocket_url: "${MCP_WEBSOCKET_URL:ws://localhost:8000}"
+    timeout_ms: 30000
+    retry_attempts: 3
+    health_check_interval_ms: 10000
+
+  # ML Backend (inference)
+  ml:
+    url: "${ML_BACKEND_URL:http://localhost:8001}"
+    timeout_ms: 60000 # Model inference can be slow
+    retry_attempts: 2
+    health_check_interval_ms: 10000
+
+  # Role Engine (governance)
+  governance:
+    url: "${GOVERNANCE_URL:http://localhost:9206}"
+    websocket_url: "${GOVERNANCE_WEBSOCKET_URL:ws://localhost:9206}"
+    timeout_ms: 10000
+    health_check_interval_ms: 15000
+
+  # Database (PostgreSQL)
+  database:
+    host: "${DATABASE_HOST:localhost}"
+    port: "${DATABASE_PORT:5432}"
+    database: "${DATABASE_NAME:aura_ia}"
+    username: "${DATABASE_USER:aura}"
+    password: "${DATABASE_PASSWORD:}"
+    pool_size: 5
+    connection_timeout_ms: 5000
+    health_check_interval_ms: 20000
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Feature Flags
+# ─────────────────────────────────────────────────────────────────────────────
+features:
+  # Real-time features
+  real_time_updates: "${FEATURE_REAL_TIME_UPDATES:true}"
+  websocket_fallback: "${FEATURE_WEBSOCKET_FALLBACK:true}" # Fall back to HTTP polling if WS fails
+
+  # Monitoring features
+  system_monitoring: "${FEATURE_SYSTEM_MONITORING:true}"
+  gpu_monitoring: "${FEATURE_GPU_MONITORING:false}" # Requires NVIDIA GPU
+  temperature_monitoring: "${FEATURE_TEMPERATURE_MONITORING:false}" # System-dependent
+  database_monitoring: "${FEATURE_DATABASE_MONITORING:true}"
+
+  # UI features
+  governance_panel: "${FEATURE_GOVERNANCE_PANEL:true}"
+  ai_system_panel: "${FEATURE_AI_SYSTEM_PANEL:true}"
+  intelligence_arena: "${FEATURE_INTELLIGENCE_ARENA:true}"
+  omni_monitor: "${FEATURE_OMNI_MONITOR:true}"
+  chat_optimization: "${FEATURE_CHAT_OPTIMIZATION:true}"
+
+  # Advanced features
+  debug_mode: "${FEATURE_DEBUG_MODE:false}"
+  performance_metrics: "${FEATURE_PERFORMANCE_METRICS:false}"
+  error_logging: "${FEATURE_ERROR_LOGGING:true}"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Logging Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+logging:
+  level: "${LOG_LEVEL:INFO}" # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "json" # json or text
+
+  # File logging
+  file:
+    enabled: true
+    path: "/var/log/aura/dashboard.log"
+    max_size_mb: 100
+    backup_count: 5 # Keep 5 backup files
+
+  # Structured logging for WebSocket events
+  websocket_events: true
+  api_requests: true
+  performance_metrics: false
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Performance Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+performance:
+  # Caching
+  cache:
+    enabled: true
+    ttl_seconds: 60 # Cache TTL for static data
+    max_size_mb: 100 # Max cache size
+
+  # Metrics collection
+  collect_metrics: "${COLLECT_METRICS:false}"
+  metrics_interval_ms: 60000 # Collect metrics every minute
+
+  # Request optimization
+  gzip_compression: true
+  min_gzip_size_bytes: 1024 # Only compress responses > 1KB
+
+  # Database query optimization
+  query_timeout_ms: 30000 # Max query execution time
+  connection_pool_size: 10
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Security Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+security:
+  # API Key authentication (optional)
+  api_key_enabled: "${SECURITY_API_KEY_ENABLED:false}"
+  api_key_header: "X-API-Key"
+
+  # Rate limiting
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 1000
+    burst_size: 50
+
+  # CORS (Cross-Origin Resource Sharing)
+  cors:
+    enabled: true
+    allowed_origins:
+      - "http://localhost:3000"
+      - "http://localhost:8080"
+      # Add your server IP here: - "http://{{NAS_IP}}:8080"
+    allowed_methods:
+      - "GET"
+      - "POST"
+      - "PUT"
+      - "DELETE"
+      - "OPTIONS"
+    allowed_headers:
+      - "Content-Type"
+      - "Authorization"
+    allow_credentials: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Dashboard Panels Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+panels:
+  # Chat Panel
+  chat:
+    enabled: true
+    max_queue_size: 50
+    timeout_seconds: 30
+    retry_attempts: 3
+    modes:
+      - name: "auto"
+        enabled: true
+        description: "Smart mode selection"
+      - name: "concierge"
+        enabled: true
+        description: "MCP Concierge assistant"
+      - name: "general"
+        enabled: true
+        description: "General conversation"
+      - name: "mcp"
+        enabled: true
+        description: "MCP commands"
+      - name: "debug"
+        enabled: "${DEBUG_CHAT_MODE:false}"
+        description: "Debug mode"
+
+  # Governance Panel
+  governance:
+    enabled: true
+    refresh_interval_ms: 10000
+    show_audit_logs: true
+    audit_log_limit: 1000
+
+  # AI System Panel
+  ai_system:
+    enabled: true
+    refresh_interval_ms: 3000
+    show_model_performance: true
+    show_inference_stats: true
+
+  # Intelligence Arena
+  intelligence_arena:
+    enabled: true
+    refresh_interval_ms: 5000
+    max_debates: 100
+    debate_timeout_seconds: 300
+
+  # Omni Monitor
+  omni_monitor:
+    enabled: true
+    refresh_interval_ms: 1000
+    graph_history_points: 100 # Keep last 100 data points for graphs
+    show_system_metrics: true
+    show_gpu_metrics: "${SHOW_GPU_METRICS:false}"
+    show_database_metrics: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Health Check Configuration
+# ─────────────────────────────────────────────────────────────────────────────
+health_checks:
+  enabled: true
+  interval_ms: 30000 # Check every 30 seconds
+
+  endpoints:
+    mcp_api: "/healthz"
+    ml_backend: "/health"
+    governance: "/healthz"
+    database: "/api/database/health"
+
+  timeout_ms: 5000
+  retries: 2
+
+  # Alert thresholds
+  alerts:
+    backend_down: true # Alert if backend is down
+    slow_response: true # Alert if response > 5s
+    high_error_rate: true # Alert if error rate > 5%

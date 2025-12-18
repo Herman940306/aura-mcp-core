@@ -1,0 +1,49 @@
+{
+  "tool_name": "weather_johannesburg",
+  "timestamp": "2025-12-07T13:50:15.975101",
+  "status": "passed",
+  "request": {
+    "message": "what's the weather in Johannesburg",
+    "conversation_id": "e2e-test-weather-johannesburg"
+  },
+  "response": {
+    "response": {
+      "response": "Hey! It's currently **23.6\u00b0C** in Johannesburg with overcast \u2601\ufe0f and a gentle breeze (9.2 km/h from the west-northwest) .",
+      "weather_data": {
+        "latitude": -26.25,
+        "longitude": 28.0,
+        "generationtime_ms": 43.894052505493164,
+        "utc_offset_seconds": 0,
+        "timezone": "GMT",
+        "timezone_abbreviation": "GMT",
+        "elevation": 1749.0,
+        "current_weather_units": {
+          "time": "iso8601",
+          "interval": "seconds",
+          "temperature": "\u00b0C",
+          "windspeed": "km/h",
+          "winddirection": "\u00b0",
+          "is_day": "",
+          "weathercode": "wmo code"
+        },
+        "current_weather": {
+          "time": "2025-12-07T11:45",
+          "interval": 900,
+          "temperature": 23.6,
+          "windspeed": 9.2,
+          "winddirection": 291,
+          "is_day": 1,
+          "weathercode": 3
+        }
+      },
+      "location": "Johannesburg",
+      "source": "open_meteo_api",
+      "llm_used": false
+    },
+    "tool_calls": [],
+    "conversation_id": "e2e-test-weather-johannesburg",
+    "mode": "general",
+    "llm_used": false,
+    "success": true
+  }
+}

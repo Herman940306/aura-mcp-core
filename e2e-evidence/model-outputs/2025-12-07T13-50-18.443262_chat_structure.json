@@ -1,0 +1,29 @@
+{
+  "name": "chat_structure",
+  "timestamp": "2025-12-07T13:50:18.443262",
+  "passed": true,
+  "message": "Chat response structure valid",
+  "details": {
+    "fields_present": [
+      "response",
+      "tool_calls",
+      "conversation_id",
+      "mode",
+      "llm_used",
+      "success"
+    ]
+  },
+  "data": {
+    "response": {
+      "response": "2025-12-07T11:50:07.738310+00:00",
+      "location": "UTC",
+      "source": "system_time",
+      "llm_used": false
+    },
+    "tool_calls": [],
+    "conversation_id": "e2e-test-time",
+    "mode": "general",
+    "llm_used": false,
+    "success": true
+  }
+}

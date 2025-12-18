@@ -1,0 +1,49 @@
+# =============================================================================
+# Aura IA PodDisruptionBudgets
+# Ensure high availability during cluster operations
+# =============================================================================
+
+{{- if .Values.gateway.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.gateway.name }}-pdb
+  labels:
+    {{- include "aura-ia.gateway.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.gateway.pdb.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.gateway.selectorLabels" . | nindent 6 }}
+{{- end }}
+
+{{- if .Values.ml.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.ml.name }}-pdb
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.ml.pdb.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.ml.selectorLabels" . | nindent 6 }}
+{{- end }}
+
+{{- if .Values.rag.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Values.rag.name }}-pdb
+  labels:
+    {{- include "aura-ia.rag.labels" . | nindent 4 }}
+spec:
+  minAvailable: {{ .Values.rag.pdb.minAvailable | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.rag.selectorLabels" . | nindent 6 }}
+{{- end }}

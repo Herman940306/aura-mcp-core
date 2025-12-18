@@ -1,0 +1,86 @@
+# =============================================================================
+# Aura IA KEDA ScaledObject Configuration
+# Queue-based autoscaling for ML Backend
+# =============================================================================
+
+{{- if .Values.keda.enabled }}
+{{- if and .Values.ml.enabled .Values.keda.mlBackend.enabled }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .Values.ml.name }}-keda-scaledobject
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ .Values.ml.name }}
+  pollingInterval: {{ .Values.keda.mlBackend.pollingInterval | default 15 }}
+  cooldownPeriod: {{ .Values.keda.mlBackend.cooldownPeriod | default 300 }}
+  minReplicaCount: {{ .Values.keda.mlBackend.minReplicas | default 1 }}
+  maxReplicaCount: {{ .Values.keda.mlBackend.maxReplicas | default 10 }}
+  triggers:
+    # Prometheus-based scaling on request queue depth
+    - type: prometheus
+      metadata:
+        serverAddress: {{ .Values.keda.prometheusAddress | default "http://prometheus-server:9090" }}
+        metricName: aura_ia_ml_queue_depth
+        query: |
+          sum(aura_ia_ml_request_queue_depth{service="{{ .Values.ml.name }}"})
+        threshold: "{{ .Values.keda.mlBackend.queueDepthThreshold | default 10 }}"
+    # CPU-based fallback trigger
+    - type: cpu
+      metadata:
+        type: Utilization
+        value: "{{ .Values.keda.mlBackend.cpuThreshold | default 70 }}"
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          policies:
+            - type: Percent
+              value: 25
+              periodSeconds: 60
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+            - type: Pods
+              value: 2
+              periodSeconds: 30
+{{- end }}
+
+{{- if and .Values.gateway.enabled .Values.keda.gateway.enabled }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ .Values.gateway.name }}-keda-scaledobject
+  labels:
+    {{- include "aura-ia.gateway.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ .Values.gateway.name }}
+  pollingInterval: {{ .Values.keda.gateway.pollingInterval | default 10 }}
+  cooldownPeriod: {{ .Values.keda.gateway.cooldownPeriod | default 180 }}
+  minReplicaCount: {{ .Values.keda.gateway.minReplicas | default 2 }}
+  maxReplicaCount: {{ .Values.keda.gateway.maxReplicas | default 20 }}
+  triggers:
+    # HTTP-based scaling on requests per second
+    - type: prometheus
+      metadata:
+        serverAddress: {{ .Values.keda.prometheusAddress | default "http://prometheus-server:9090" }}
+        metricName: aura_ia_gateway_requests_per_second
+        query: |
+          sum(rate(aura_ia_http_requests_total{service="{{ .Values.gateway.name }}"}[1m]))
+        threshold: "{{ .Values.keda.gateway.requestsPerSecondThreshold | default 100 }}"
+    # Concurrent connections trigger
+    - type: prometheus
+      metadata:
+        serverAddress: {{ .Values.keda.prometheusAddress | default "http://prometheus-server:9090" }}
+        metricName: aura_ia_gateway_connections
+        query: |
+          sum(aura_ia_active_connections{service="{{ .Values.gateway.name }}"})
+        threshold: "{{ .Values.keda.gateway.connectionsThreshold | default 500 }}"
+{{- end }}
+{{- end }}

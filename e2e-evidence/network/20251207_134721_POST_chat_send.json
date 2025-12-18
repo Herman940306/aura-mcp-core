@@ -1,0 +1,18 @@
+{
+  "endpoint": "/chat/send",
+  "method": "POST",
+  "timestamp": "2025-12-07T13:47:21.973250",
+  "request": {
+    "message": "Hello, this is a test message",
+    "conversation_id": "e2e-api-test-1"
+  },
+  "response": {
+    "response": "Hello! How can I assist you with the Aura_IA MCP stack today?",
+    "tool_calls": [],
+    "conversation_id": "e2e-api-test-1",
+    "mode": "general",
+    "llm_used": true,
+    "success": true
+  },
+  "status_code": 200
+}

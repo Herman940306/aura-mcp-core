@@ -1,0 +1,14 @@
+{
+  "test": "llm_quality",
+  "prompt": "Tell me something interesting about space.",
+  "response": "Interesting fact: The largest known star, UY Scuti, is a red supergiant and has a radius about 1,700 times that of the Sun. It's located approximately 9,500 light-years away from Earth in the constellation Scutum",
+  "validation": {
+    "passed": true,
+    "message": "LLM response quality valid",
+    "details": {
+      "length": 212,
+      "word_count": 35,
+      "errors": []
+    }
+  }
+}

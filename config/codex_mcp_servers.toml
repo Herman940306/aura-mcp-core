@@ -1,0 +1,250 @@
+# =============================================================================
+# Codex MCP Server Configuration
+# =============================================================================
+# Version: 1.1.0
+# Date: 2025-12-07
+# Reference: AURA_IA_MCP_PRD.md Section 8.14 (Codex MCP Integration)
+# Authority: Aura_IA_MCP Development Team
+#
+# This file configures MCP servers for GPT/Codex integration.
+# Place this file in your project root or ~/.config/codex/ directory.
+#
+# ARCHITECTURE: Aura IA MCP is the LEAD, Codex operates as CO-MCP
+# - Aura IA handles: HNSC safety, tool governance, role enforcement
+# - Codex handles: Code generation, file operations, shell commands
+#
+# Documentation: https://github.com/openai/codex
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Feature Flags
+# -----------------------------------------------------------------------------
+[features]
+# Enable experimental Rust MCP client for OAuth support
+rmcp_client = true
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+# Codex uses RUST_LOG environment variable for logging:
+#   RUST_LOG=codex_core=info,codex_tui=info,codex_rmcp_client=info
+#
+# TUI logs: ~/.codex/log/codex-tui.log
+# Monitor with: tail -F ~/.codex/log/codex-tui.log
+#
+# Non-interactive (codex exec): RUST_LOG=error (prints inline)
+
+# -----------------------------------------------------------------------------
+# Aura IA MCP Gateway Server (LEAD MCP - Primary Entry Point)
+# -----------------------------------------------------------------------------
+[mcp_servers.aura_gateway]
+# Streamable HTTP server - connects to the main Aura IA Gateway
+# This is the LEAD MCP that governs all tool execution
+url = "http://localhost:9200/mcp/stream"
+startup_timeout_sec = 30
+tool_timeout_sec = 120
+enabled = true
+
+# Optional: Subset of tools to expose (comment out to expose all)
+# enabled_tools = [
+#     "check_health",
+#     "get_system_status",
+#     "analyze_emotion",
+#     "semantic_rank",
+#     "start_debate",
+#     "evaluate_risk",
+#     "ollama_consult",
+# ]
+
+# Hide internal/administrative tools from Codex
+disabled_tools = [
+    "execute_command",
+    "request_approval",
+]
+
+# -----------------------------------------------------------------------------
+# Codex as MCP Server (CO-MCP - Code Generation Assistant)
+# -----------------------------------------------------------------------------
+# Codex can run as an MCP server via `codex mcp-server`
+# This enables Codex as a tool inside Aura IA's multi-agent framework
+#
+# Launch with MCP Inspector:
+#   npx @modelcontextprotocol/inspector codex mcp-server
+#
+# Available tools when Codex runs as server:
+#   - codex: Run a Codex session with configuration
+#   - codex-reply: Continue an existing Codex conversation
+
+[mcp_servers.codex_agent]
+command = "codex"
+args = ["mcp-server"]
+startup_timeout_sec = 60
+tool_timeout_sec = 600000  # 10 minutes - Codex sessions can take time
+enabled = true
+
+# Codex MCP Server tool configuration (passed to codex tool)
+# These are the default settings when Aura IA invokes Codex
+[mcp_servers.codex_agent.env]
+# Approval policy: untrusted, on-failure, on-request, never
+CODEX_APPROVAL_POLICY = "on-failure"
+# Sandbox mode: read-only, workspace-write, danger-full-access
+CODEX_SANDBOX = "workspace-write"
+# Default model
+CODEX_MODEL = "o4-mini"
+
+# -----------------------------------------------------------------------------
+# Aura IA ML Backend Server (Direct ML Access)
+# -----------------------------------------------------------------------------
+[mcp_servers.aura_ml]
+url = "http://localhost:9201/mcp/stream"
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+enabled = true
+
+# ML-specific tools only
+enabled_tools = [
+    "analyze_emotion",
+    "semantic_rank",
+    "get_model_status",
+]
+
+# -----------------------------------------------------------------------------
+# Ollama Agent Server (External LLM Consultation)
+# -----------------------------------------------------------------------------
+[mcp_servers.aura_ollama]
+url = "http://localhost:9207/mcp/stream"
+startup_timeout_sec = 30
+tool_timeout_sec = 180  # Longer timeout for LLM generation
+enabled = true
+
+# Expose all Ollama tools
+enabled_tools = [
+    "ollama_consult",
+    "ollama_list_models",
+    "ollama_model_info",
+    "ollama_health",
+]
+
+# Block model pulling via Codex (security measure)
+disabled_tools = [
+    "ollama_pull_model",
+]
+
+# -----------------------------------------------------------------------------
+# Role Engine Server (Permissions & Trust)
+# -----------------------------------------------------------------------------
+[mcp_servers.aura_role_engine]
+url = "http://localhost:9206/mcp/stream"
+startup_timeout_sec = 15
+tool_timeout_sec = 30
+enabled = true
+
+enabled_tools = [
+    "list_roles",
+    "get_role_capabilities",
+    "suggest_role",
+    "check_permission",
+]
+
+# -----------------------------------------------------------------------------
+# Local STDIO Server Configuration (Alternative)
+# -----------------------------------------------------------------------------
+# Uncomment this section to use a local Python STDIO server instead of HTTP
+
+# [mcp_servers.aura_local]
+# command = "python"
+# args = ["-m", "aura_ia_mcp.main", "--mode", "stdio"]
+# cwd = "F:/Kiro_Projects/LATEST_MCP"
+# startup_timeout_sec = 30
+# tool_timeout_sec = 120
+# enabled = false
+#
+# [mcp_servers.aura_local.env]
+# AURA_LOG_LEVEL = "INFO"
+# AURA_BACKEND_URL = "http://localhost:9201"
+
+# -----------------------------------------------------------------------------
+# Docker-based Server Configuration
+# -----------------------------------------------------------------------------
+# Use this when running Aura IA in Docker containers
+
+# [mcp_servers.aura_docker]
+# command = "docker"
+# args = ["exec", "-i", "aura-ia-gateway", "python", "-m", "aura_ia_mcp.main", "--mode", "stdio"]
+# startup_timeout_sec = 45
+# tool_timeout_sec = 120
+# enabled = false
+
+# -----------------------------------------------------------------------------
+# Environment Variables (Propagated to all servers)
+# -----------------------------------------------------------------------------
+# Note: These are set at the system level or in a .env file
+# 
+# Required:
+#   AURA_GATEWAY_URL=http://localhost:9200
+#   AURA_BACKEND_URL=http://localhost:9201
+#
+# Optional:
+#   GITHUB_TOKEN=<your-token>  # For GitHub tool integration
+#   OLLAMA_HOST=http://localhost:9207
+#   AURA_LOG_LEVEL=INFO
+#   RUST_LOG=codex_core=info  # Codex logging level
+
+# -----------------------------------------------------------------------------
+# Security Notes
+# -----------------------------------------------------------------------------
+# 1. Never expose sensitive tools (execute_command, request_approval) to Codex
+# 2. Use tool timeouts appropriate for the operation complexity
+# 3. The disabled_tools list takes precedence over enabled_tools
+# 4. All tool calls are logged to logs/security_audit.jsonl
+# 5. Circuit breaker patterns protect against cascading failures
+# 6. Codex sandbox mode controls file system access
+
+# -----------------------------------------------------------------------------
+# CLI Commands Reference
+# -----------------------------------------------------------------------------
+# List configured servers:
+#   codex mcp list
+#   codex mcp list --json
+#
+# Show server details:
+#   codex mcp get aura_gateway
+#   codex mcp get aura_gateway --json
+#
+# Add a new server:
+#   codex mcp add my_server -- python -m my_mcp_server
+#
+# Remove a server:
+#   codex mcp remove my_server
+#
+# OAuth login (if supported):
+#   codex mcp login aura_gateway
+#   codex mcp logout aura_gateway
+#
+# Run Codex as MCP server:
+#   codex mcp-server
+#
+# Inspect Codex MCP server:
+#   npx @modelcontextprotocol/inspector codex mcp-server
+
+# -----------------------------------------------------------------------------
+# Codex MCP Server Tool Properties Reference
+# -----------------------------------------------------------------------------
+# When invoking the `codex` tool via MCP:
+#
+# | Property           | Type   | Description                                      |
+# |--------------------|--------|--------------------------------------------------|
+# | prompt (required)  | string | Initial user prompt for Codex conversation       |
+# | approval-policy    | string | untrusted, on-failure, on-request, never         |
+# | base-instructions  | string | Override default instructions                    |
+# | config             | object | Override config.toml settings                    |
+# | cwd                | string | Working directory for session                    |
+# | model              | string | Model override (o3, o4-mini, etc.)               |
+# | profile            | string | Configuration profile from config.toml           |
+# | sandbox            | string | read-only, workspace-write, danger-full-access   |
+#
+# The `codex-reply` tool continues a conversation:
+# | Property              | Type   | Description                           |
+# |-----------------------|--------|---------------------------------------|
+# | prompt (required)     | string | Next user prompt                      |
+# | conversationId (req.) | string | ID of conversation to continue        |

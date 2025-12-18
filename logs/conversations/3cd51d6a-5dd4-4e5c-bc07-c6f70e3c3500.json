@@ -1,0 +1,16 @@
+{
+  "id": "3cd51d6a-5dd4-4e5c-bc07-c6f70e3c3500",
+  "timestamp": "2025-11-29T22:48:49.816803",
+  "messages": [
+    {
+      "model": "test",
+      "role": "assistant",
+      "content": "Msg 1"
+    }
+  ],
+  "metadata": {},
+  "provenance": {
+    "logged_at": "2025-11-29T22:48:49.816803",
+    "version": "1.0"
+  }
+}

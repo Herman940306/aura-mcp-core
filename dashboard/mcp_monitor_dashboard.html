@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIRO_MCP Monitor Dashboard - GODMODE</title>
+    <link rel="icon" type="image/x-icon" href="mcp_monitor_icon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="mcp_monitor_icon.ico">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1a1a2e;
+            --bg-secondary: #16213e;
+            --bg-tertiary: #0f3460;
+            --accent-cyan: #00d4ff;
+            --accent-bright: #00ffff;
+            --success: #00ff00;
+            --warning: #ffaa00;
+            --danger: #ff0044;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --shadow: rgba(0, 212, 255, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1e1e1e;
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #252526;
+            border-right: 2px solid var(--accent-cyan);
+            height: 100vh;
+            overflow-y: auto;
+            position: fixed;
+            left: 0;
+            top: 0;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            background: #2d2d30;
+            border-bottom: 2px solid var(--accent-cyan);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .sidebar-title {
+            font-size: 1.3em;
+            color: var(--accent-cyan);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+
+        .activity-list {
+            padding: 15px;
+        }
+
+        .activity-item {
+            background: #2d2d30;
+            border-left: 3px solid var(--accent-cyan);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+
+        .activity-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .activity-item.active {
+            border-left-color: var(--success);
+        }
+
+        .activity-item.completed {
+            border-left-color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .activity-item.error {
+            border-left-color: var(--danger);
+        }
+
+        .activity-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .activity-tool {
+            font-weight: bold;
+            color: var(--accent-bright);
+            font-size: 0.95em;
+        }
+
+        .activity-status {
+            font-size: 0.75em;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .activity-status.running {
+            background: var(--success);
+            color: var(--bg-primary);
+        }
+
+        .activity-status.completed {
+            background: var(--text-secondary);
+            color: var(--bg-primary);
+        }
+
+        .activity-status.failed {
+            background: var(--danger);
+            color: white;
+        }
+
+        .activity-details {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .activity-duration {
+            color: var(--accent-cyan);
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+
+        .sidebar-stats {
+            padding: 15px;
+            background: #2d2d30;
+            border-top: 2px solid var(--accent-cyan);
+            position: sticky;
+            bottom: 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            color: var(--accent-bright);
+            font-weight: bold;
+            transition: all 0.5s ease;
+        }
+
+        .main-content {
+            margin-left: 350px;
+            flex: 1;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--accent-cyan);
+            margin-bottom: 30px;
+            background: #252526;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header h1 {
+            font-size: 0.75em;
+            color: var(--accent-cyan);
+            background: var(--bg-tertiary);
+            padding: 5px 15px;
+            border: 2px solid var(--accent-cyan);
+            border-radius: 6px;
+            margin: 0;
+            animation: textGlow 3s ease-in-out infinite;
+            letter-spacing: 1px;
+        }
+
+        .logo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            animation: logoBreathe 6s ease-in-out infinite;
+            object-fit: cover;
+        }
+
+        @keyframes logoBreathe {
+
+            0%,
+            100% {
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes textGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 30px rgba(138, 43, 226, 0.6), 0 0 60px rgba(138, 43, 226, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 50px rgba(147, 51, 234, 0.9), 0 0 100px rgba(147, 51, 234, 0.5);
+            }
+        }
+
+        .header .timestamp {
+            color: var(--accent-cyan);
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #252526;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3e3e42;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px var(--shadow);
+            border-color: var(--accent-cyan);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg-tertiary);
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 0 10px var(--shadow);
+        }
+
+        .card-icon {
+            font-size: 1.8em;
+            filter: drop-shadow(0 0 10px var(--accent-cyan));
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .status-online {
+            background: var(--success);
+            color: var(--bg-primary);
+            box-shadow: 0 0 20px var(--success);
+        }
+
+        .status-offline {
+            background: var(--danger);
+            color: white;
+        }
+
+        .metric {
+            margin: 15px 0;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9em;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--accent-bright);
+        }
+
+        .metric-bar {
+            width: 100%;
+            height: 30px;
+            background: var(--bg-tertiary);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .metric-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-bright));
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-primary);
+            font-weight: bold;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .toggle-label {
+            font-size: 1.1em;
+            color: var(--text-primary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-primary);
+            transition: 0.4s;
+            border-radius: 30px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--text-secondary);
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-bright));
+            box-shadow: 0 0 20px var(--shadow);
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(30px);
+            background-color: white;
+        }
+
+        .button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button-primary {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-bright));
+            color: var(--bg-primary);
+        }
+
+        .button-primary:hover {
+            box-shadow: 0 0 30px var(--shadow);
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .footer-bottom-left {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: rgba(45, 45, 48, 0.95);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            z-index: 1001;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            font-size: 0.8em;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-bottom-left .separator {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        .footer-link {
+            color: var(--accent-cyan);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-bright);
+            text-shadow: 0 0 10px var(--accent-bright);
+        }
+
+        /* Chat Bar Styles */
+        .chat-bar {
+            position: fixed;
+            bottom: 0;
+            left: 350px;
+            right: 0;
+            background: #252526;
+            border-top: 2px solid var(--accent-cyan);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .chat-dropdown {
+            position: relative;
+        }
+
+        .chat-dropdown-button {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-dropdown-button:hover {
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 15px var(--shadow);
+        }
+
+        .chat-dropdown-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 10px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 8px;
+            min-width: 200px;
+            display: none;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-dropdown-menu.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-dropdown-item {
+            padding: 12px 16px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--bg-secondary);
+        }
+
+        .chat-dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .chat-dropdown-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-bright);
+        }
+
+        .chat-dropdown-item.active {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--accent-bright);
+            font-weight: bold;
+        }
+
+        .chat-input-container {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--accent-cyan);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            box-shadow: 0 0 20px var(--shadow);
+            border-color: var(--accent-bright);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .chat-send-button {
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-bright));
+            border: none;
+            color: var(--bg-primary);
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .chat-send-button:hover {
+            box-shadow: 0 0 30px var(--shadow);
+            transform: translateY(-2px);
+        }
+
+        .chat-send-button:active {
+            transform: translateY(0);
+        }
+
+        .chat-send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Adjust main content to account for chat bar */
+        .main-content {
+            margin-left: 350px;
+            flex: 1;
+            padding: 20px;
+            padding-bottom: 100px;
+            /* Space for chat bar */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Live Activity Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">
+                <span>📊</span>
+                <span>LIVE ACTIVITY</span>
+            </div>
+            <div class="sidebar-subtitle">Real-time MCP Process Tracking</div>
+        </div>
+
+        <div class="activity-list" id="activity-list">
+            <div class="activity-item active">
+                <div class="activity-header">
+                    <span class="activity-tool">🔄 System Initializing</span>
+                    <span class="activity-status running">RUNNING</span>
+                </div>
+                <div class="activity-details">Starting dashboard services...</div>
+                <div class="activity-time">
+                    <span>⏱️</span>
+                    <span class="activity-duration">0.5s</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-stats">
+            <div class="stat-row">
+                <span class="stat-label">Total Processes:</span>
+                <span class="stat-value" id="stat-total">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Active:</span>
+                <span class="stat-value" id="stat-active" style="color: var(--success);">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Completed:</span>
+                <span class="stat-value" id="stat-completed">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Failed:</span>
+                <span class="stat-value" id="stat-failed" style="color: var(--danger);">0</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="header">
+                <img src="AuraIA New Logo (1).jpg" alt="KIRO Logo" class="logo">
+                <h1>KIRO_MCP MONITOR</h1>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">⚙️ ULTRA CONTROLS</div>
+                </div>
+
+                <div class="toggle-container">
+                    <div class="toggle-label">🧠 ULTRA Mode</div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-ultra" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-container">
+                    <div class="toggle-label">🎯 Semantic Ranking</div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-semantic" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-container">
+                    <div class="toggle-label">🔮 Predictions</div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-predictions" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="toggle-container">
+                    <div class="toggle-label">😊 Emotion Detection</div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="toggle-emotion" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <button class="button button-primary" onclick="applySettings()" style="width: 100%; margin-top: 15px;">
+                    💾 APPLY SETTINGS
+                </button>
+            </div>
+
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🚀 MCP Server</div>
+                        <span class="status-badge status-offline" id="mcp-status">CHECKING</span>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Response Time</div>
+                        <div class="metric-value" id="mcp-response">-- ms</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🧠 AI System</div>
+                        <span class="status-badge status-offline" id="ai-status">CHECKING</span>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">Active Engines</div>
+                        <div class="metric-value" id="ai-engines">0 / 5</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer Bottom Left -->
+    <div class="footer-bottom-left">
+        <span><strong>KIRO_MCP v1.0</strong></span>
+        <span class="separator">|</span>
+        <span style="color: var(--accent-cyan);">Herman Swanepoel</span>
+        <span class="separator">|</span>
+        <a href="docs.html" class="footer-link" target="_blank">📖 Docs</a>
+        <span class="separator">|</span>
+        <a href="MCP_TROUBLESHOOTING.md" class="footer-link">🔧 Help</a>
+    </div>
+
+    <!-- Chat Bar -->
+    <div class="chat-bar">
+        <div class="chat-dropdown">
+            <button class="chat-dropdown-button" onclick="toggleChatDropdown()">
+                <span>💬</span>
+                <span id="chat-mode-text">General Chat</span>
+                <span>▼</span>
+            </button>
+            <div class="chat-dropdown-menu" id="chat-dropdown-menu">
+                <div class="chat-dropdown-item active" onclick="selectChatMode('general')">
+                    💬 General Chat
+                </div>
+                <div class="chat-dropdown-item" onclick="selectChatMode('mcp')">
+                    🔧 MCP Commands
+                </div>
+                <div class="chat-dropdown-item" onclick="selectChatMode('ai')">
+                    🧠 AI Assistant
+                </div>
+                <div class="chat-dropdown-item" onclick="selectChatMode('debug')">
+                    🐛 Debug Mode
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here... (Coming Soon)"
+                disabled>
+        </div>
+
+        <button class="chat-send-button" onclick="sendChatMessage()" disabled>
+            <span>📤</span>
+            <span>Send</span>
+        </button>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        function updateTimestamp() {
+            document.getElementById('timestamp').textContent = new Date().toLocaleString();
+        }
+
+        async function checkMCPServer() {
+            try {
+                const response = await fetch(`${API_URL}/mcp/status`);
+                const data = await response.json();
+
+                if (data.status === 'online') {
+                    document.getElementById('mcp-status').textContent = 'ONLINE';
+                    document.getElementById('mcp-status').className = 'status-badge status-online';
+                    document.getElementById('mcp-response').textContent = `${data.response_time} ms`;
+                } else {
+                    document.getElementById('mcp-status').textContent = 'OFFLINE';
+                    document.getElementById('mcp-status').className = 'status-badge status-offline';
+                }
+            } catch (error) {
+                document.getElementById('mcp-status').textContent = 'OFFLINE';
+                document.getElementById('mcp-status').className = 'status-badge status-offline pulse';
+            }
+        }
+
+        async function checkAISystem() {
+            try {
+                const response = await fetch(`${API_URL}/ai/status`);
+                const data = await response.json();
+
+                if (data.status === 'operational') {
+                    document.getElementById('ai-status').textContent = 'ONLINE';
+                    document.getElementById('ai-status').className = 'status-badge status-online';
+                    document.getElementById('ai-engines').textContent = `${data.active_engines} / ${data.total_engines}`;
+                } else {
+                    document.getElementById('ai-status').textContent = 'OFFLINE';
+                    document.getElementById('ai-status').className = 'status-badge status-offline';
+                }
+            } catch (error) {
+                document.getElementById('ai-status').textContent = 'OFFLINE';
+                document.getElementById('ai-status').className = 'status-badge status-offline pulse';
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${API_URL}/settings`);
+                const settings = await response.json();
+
+                document.getElementById('toggle-ultra').checked = settings.ultra_enabled;
+                document.getElementById('toggle-semantic').checked = settings.semantic_ranking;
+                document.getElementById('toggle-predictions').checked = settings.predictions;
+                document.getElementById('toggle-emotion').checked = settings.emotion_detection;
+            } catch (error) {
+                console.error('Failed to load settings:', error);
+            }
+        }
+
+        async function applySettings() {
+            const settings = {
+                ultra_enabled: document.getElementById('toggle-ultra').checked,
+                semantic_ranking: document.getElementById('toggle-semantic').checked,
+                predictions: document.getElementById('toggle-predictions').checked,
+                emotion_detection: document.getElementById('toggle-emotion').checked
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(settings)
+                });
+
+                if (response.ok) {
+                    alert('✅ Settings applied successfully!');
+                } else {
+                    alert('❌ Failed to apply settings');
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        async function updateDashboard() {
+            updateTimestamp();
+            await checkMCPServer();
+            await checkAISystem();
+        }
+
+        // Live Activity Tracking
+        let activityLog = [];
+        let activityStats = {
+            total: 0,
+            active: 0,
+            completed: 0,
+            failed: 0
+        };
+
+        function addActivity(tool, details, status = 'running', severity = 'normal') {
+            const activity = {
+                id: Date.now(),
+                tool: tool,
+                details: details,
+                status: status,
+                severity: severity, // normal, warning, error
+                timestamp: new Date().toLocaleTimeString()
+            };
+
+            activityLog.unshift(activity);
+            if (activityLog.length > 5) {
+                activityLog.pop(); // Keep only last 5 (LIMIT)
+            }
+
+            updateActivityList();
+            updateActivityStats();
+        }
+
+        function updateActivity(id, status, severity = 'normal') {
+            const activity = activityLog.find(a => a.id === id);
+            if (activity) {
+                activity.status = status;
+                activity.severity = severity;
+                updateActivityList();
+                updateActivityStats();
+            }
+        }
+
+        function updateActivityList() {
+            const listEl = document.getElementById('activity-list');
+
+            if (activityLog.length === 0) {
+                listEl.innerHTML = `
+                    <div class="activity-item">
+                        <div class="activity-details" style="text-align: center; color: var(--text-secondary);">
+                            No active processes
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = activityLog.map(activity => {
+                // Determine border color based on severity
+                let borderColor = 'var(--accent-cyan)'; // normal
+                if (activity.severity === 'warning') {
+                    borderColor = 'var(--warning)'; // orange
+                } else if (activity.severity === 'error') {
+                    borderColor = 'var(--danger)'; // red
+                }
+
+                const statusClass = activity.status === 'running' ? 'active' :
+                    activity.status === 'completed' ? 'completed' : 'error';
+                const statusText = activity.status === 'running' ? 'RUNNING' :
+                    activity.status === 'completed' ? 'DONE' : 'FAILED';
+                const statusBadgeClass = activity.status === 'running' ? 'running' :
+                    activity.status === 'completed' ? 'completed' : 'failed';
+
+                const icon = getToolIcon(activity.tool);
+
+                return `
+                    <div class="activity-item ${statusClass}" style="border-left-color: ${borderColor};">
+                        <div class="activity-header">
+                            <span class="activity-tool">${icon} ${activity.tool}</span>
+                            <span class="activity-status ${statusBadgeClass}">${statusText}</span>
+                        </div>
+                        <div class="activity-details">${activity.details}</div>
+                        <div class="activity-time">
+                            <span>🕐</span>
+                            <span class="activity-duration">${activity.timestamp}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getToolIcon(tool) {
+            if (tool.includes('emotion')) return '😊';
+            if (tool.includes('prediction')) return '🔮';
+            if (tool.includes('github')) return '🐙';
+            if (tool.includes('health')) return '💚';
+            if (tool.includes('ml_')) return '🧠';
+            if (tool.includes('ultra')) return '⚡';
+            if (tool.includes('command')) return '⚙️';
+            if (tool.includes('calibrate')) return '🎯';
+            return '🔧';
+        }
+
+        function updateActivityStats() {
+            activityStats.total = activityLog.length;
+            activityStats.active = activityLog.filter(a => a.status === 'running').length;
+            activityStats.completed = activityLog.filter(a => a.status === 'completed').length;
+            activityStats.failed = activityLog.filter(a => a.status === 'failed').length;
+
+            document.getElementById('stat-total').textContent = activityStats.total;
+            document.getElementById('stat-active').textContent = activityStats.active;
+            document.getElementById('stat-completed').textContent = activityStats.completed;
+            document.getElementById('stat-failed').textContent = activityStats.failed;
+        }
+
+        // Simulate MCP activities
+        function simulateMCPActivity() {
+            const tools = [
+                { name: 'ide_agents_ml_analyze_emotion', desc: 'Analyzing user sentiment', severity: 'normal' },
+                { name: 'ide_agents_ml_get_predictions', desc: 'Fetching AI predictions', severity: 'normal' },
+                { name: 'ide_agents_github_rank_repos', desc: 'Ranking GitHub repositories', severity: 'normal' },
+                { name: 'ide_agents_health', desc: 'Health check', severity: 'normal' },
+                { name: 'ide_agents_ml_calibrate_confidence', desc: 'Calibrating confidence scores', severity: 'normal' },
+                { name: 'ide_agents_ultra_rank', desc: 'ULTRA semantic ranking', severity: 'normal' },
+                { name: 'ide_agents_command', desc: 'Executing command', severity: 'normal' },
+                { name: 'ide_agents_ml_get_learning_insights', desc: 'Analyzing learning patterns', severity: 'normal' }
+            ];
+
+            const randomTool = tools[Math.floor(Math.random() * tools.length)];
+            const activityId = Date.now();
+
+            // Randomly assign severity for demo
+            const rand = Math.random();
+            let severity = 'normal';
+            let status = 'completed';
+
+            if (rand > 0.9) {
+                severity = 'error';
+                status = 'failed';
+            } else if (rand > 0.8) {
+                severity = 'warning';
+                status = 'completed';
+            }
+
+            // Add activity with final status (no updates)
+            addActivity(randomTool.name, randomTool.desc, status, severity);
+        }
+
+        // Fetch real activities from API
+        async function fetchActivities() {
+            try {
+                const response = await fetch(`${API_URL}/activities`);
+                if (response.ok) {
+                    const activities = await response.json();
+                    // Update activity log with real data
+                    activities.forEach(act => {
+                        addActivity(act.tool, act.details, act.status);
+                    });
+                }
+            } catch (error) {
+                // Fallback to simulation if API not available
+                console.log('Using simulated activities');
+            }
+        }
+
+        // Enhanced dashboard update with activity tracking
+        async function updateDashboardWithActivity() {
+            updateTimestamp();
+            await checkMCPServer();
+            await checkAISystem();
+        }
+
+        // NO automatic updates - items are static once created
+
+        // Simulate activities for demo (less frequent)
+        setInterval(() => {
+            if (Math.random() > 0.8) { // 20% chance every 10 seconds
+                simulateMCPActivity();
+            }
+        }, 10000);
+
+        // Initialize
+        loadSettings();
+        updateDashboard();
+        setInterval(updateDashboard, 5000);
+
+        // Add initial activities
+        setTimeout(() => {
+            addActivity('Dashboard Init', 'Dashboard loaded successfully', 'completed', 'normal');
+        }, 500);
+
+        // Chat Bar Functions
+        let currentChatMode = 'general';
+
+        function toggleChatDropdown() {
+            const menu = document.getElementById('chat-dropdown-menu');
+            menu.classList.toggle('show');
+        }
+
+        function selectChatMode(mode) {
+            currentChatMode = mode;
+            const modeText = {
+                'general': '💬 General Chat',
+                'mcp': '🔧 MCP Commands',
+                'ai': '🧠 AI Assistant',
+                'debug': '🐛 Debug Mode'
+            };
+
+            document.getElementById('chat-mode-text').textContent = modeText[mode];
+
+            // Update active state
+            document.querySelectorAll('.chat-dropdown-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Update placeholder
+            const placeholders = {
+                'general': 'Type your message here...',
+                'mcp': 'Enter MCP command (e.g., health, status)...',
+                'ai': 'Ask AI anything...',
+                'debug': 'Enter debug command...'
+            };
+            document.getElementById('chat-input').placeholder = placeholders[mode] + ' (Coming Soon)';
+
+            // Close dropdown
+            toggleChatDropdown();
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Add activity for chat message
+            addActivity(`Chat: ${currentChatMode}`, message, 'running');
+
+            // Simulate processing
+            setTimeout(() => {
+                addActivity(`Chat Response`, 'Message processed successfully', 'completed');
+            }, 1000);
+
+            // Clear input
+            input.value = '';
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.querySelector('.chat-dropdown');
+            if (!dropdown.contains(event.target)) {
+                document.getElementById('chat-dropdown-menu').classList.remove('show');
+            }
+        });
+
+        // Handle Enter key in chat input
+        document.getElementById('chat-input').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+    </script>
+</body>
+
+</html>

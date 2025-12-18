@@ -1,0 +1,53 @@
+# =============================================================================
+# Aura IA ServiceAccount & RBAC
+# Minimal permissions for security
+# =============================================================================
+{{- if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "aura-ia.serviceAccountName" . }}
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end }}
+
+---
+# Role for reading ConfigMaps and Secrets in namespace
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-role
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["{{ .Values.secrets.name }}"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+
+---
+# Bind Role to ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-rolebinding
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "aura-ia.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "aura-ia.fullname" . }}-role
+  apiGroup: rbac.authorization.k8s.io

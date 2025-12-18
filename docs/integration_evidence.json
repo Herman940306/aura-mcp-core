@@ -1,0 +1,100 @@
+{
+    "generated_at_utc": "2025-11-24T16:20:00Z",
+    "structural_audit": {
+        "unexpected": []
+    },
+    "prd_alignment": {
+        "missing_dirs": [],
+        "missing_files": [],
+        "absent_ports": []
+    },
+    "workflows_present": [
+        "ci.yml",
+        "compliance.yml",
+        "dependency_update.yml",
+        "lint.yml",
+        "port_compliance.yml",
+        "role_policy_checks.yml",
+        "sbom.yml",
+        "structure_audit.yml",
+        "tests.yml",
+        "type-check.yml"
+    ],
+    "safe_mode": {
+        "status_event": {
+            "ts": 1764000228.0298028,
+            "active": true
+        },
+        "gating_samples": {
+            "roles_mutate": {
+                "locked_example": {
+                    "status": 423,
+                    "reason": "SAFE MODE locked"
+                },
+                "capability_missing_example": {
+                    "status": 403,
+                    "reason": "Capability / approval not satisfied"
+                }
+            },
+            "training_start": {
+                "locked_example": {
+                    "status": 423,
+                    "reason": "SAFE MODE locked"
+                },
+                "allowed_example": {
+                    "status": 200,
+                    "reason": "Autonomy enabled (sample)"
+                }
+            }
+        }
+    },
+    "policy_decision_samples": [
+        {
+            "route": "/roles/load",
+            "allowed": true,
+            "risk_score": 0.0
+        },
+        {
+            "route": "/roles/mutate",
+            "allowed": false,
+            "risk_score": 0.7
+        },
+        {
+            "route": "/training/start",
+            "allowed": false,
+            "risk_score": 0.8
+        },
+        {
+            "route": "/training/start",
+            "allowed": true,
+            "risk_score": 0.4
+        }
+    ],
+    "log_paths": [
+        "logs/security_audit.jsonl"
+    ],
+    "checklist_progress": {
+        "phase0_completed": 4,
+        "phase0_total": 5,
+        "phase1_completed": 3,
+        "phase1_total": 3,
+        "phase2_completed": 0,
+        "phase2_total": 6,
+        "phase3_completed": 4,
+        "phase3_total": 7,
+        "phase4_completed": 3,
+        "phase4_total": 5,
+        "phase5_completed": 6,
+        "phase5_total": 9,
+        "phase8_policy_audited": true
+    },
+    "next_actions": [
+        "Complete Phase 2 structural merges (services/training/override compose)",
+        "Capability flag configuration & verification (Phase 3 remaining items)",
+        "Record explicit SAFE MODE off transition evidence",
+        "Implement tool registry + baseline tool schemas (Phase 6)",
+        "Execute full pytest + type + lint suite (Phase 7)",
+        "Prepare PR with evidence bundle attachment"
+    ],
+    "evidence_notes": "SAFE MODE status event present; gating behavior visible in audit log with 423/403/200 transitions. Structural and PRD alignment audits clean. Workflows established for CI."
+}

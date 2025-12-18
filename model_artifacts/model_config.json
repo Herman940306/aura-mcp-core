@@ -1,0 +1,10 @@
+{
+  "model_name": "Phi-3-mini-4k-instruct-Q4_K_M",
+  "model_file": "phi-3-mini-4k-instruct-q4_k_m.gguf",
+  "model_description": "Microsoft Phi-3 Mini 4K Instruct (3.8B params, Q4 quantization)",
+  "chat_format": "chatml",
+  "context_length": 4096,
+  "model_type": "phi",
+  "quantization": "Q4_K_M",
+  "source_url": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf"
+}

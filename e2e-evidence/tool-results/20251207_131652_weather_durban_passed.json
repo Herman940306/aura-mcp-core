@@ -1,0 +1,49 @@
+{
+  "tool_name": "weather_durban",
+  "timestamp": "2025-12-07T13:16:52.025705",
+  "status": "passed",
+  "request": {
+    "message": "what's the weather in Durban",
+    "conversation_id": "e2e-test-weather-durban"
+  },
+  "response": {
+    "response": {
+      "response": "Hey! It's currently **21.7\u00b0C** in Durban with overcast \u2601\ufe0f and a gentle breeze (12.5 km/h from the east-northeast) .",
+      "weather_data": {
+        "latitude": -29.875,
+        "longitude": 31.0,
+        "generationtime_ms": 0.05745887756347656,
+        "utc_offset_seconds": 0,
+        "timezone": "GMT",
+        "timezone_abbreviation": "GMT",
+        "elevation": 25.0,
+        "current_weather_units": {
+          "time": "iso8601",
+          "interval": "seconds",
+          "temperature": "\u00b0C",
+          "windspeed": "km/h",
+          "winddirection": "\u00b0",
+          "is_day": "",
+          "weathercode": "wmo code"
+        },
+        "current_weather": {
+          "time": "2025-12-07T11:15",
+          "interval": 900,
+          "temperature": 21.7,
+          "windspeed": 12.5,
+          "winddirection": 78,
+          "is_day": 1,
+          "weathercode": 3
+        }
+      },
+      "location": "Durban",
+      "source": "open_meteo_api",
+      "llm_used": false
+    },
+    "tool_calls": [],
+    "conversation_id": "e2e-test-weather-durban",
+    "mode": "general",
+    "llm_used": false,
+    "success": true
+  }
+}

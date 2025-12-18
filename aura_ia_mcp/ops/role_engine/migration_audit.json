@@ -1,0 +1,22 @@
+{
+  "migrations": [
+    {
+      "migration_id": "migration_20251129_224852",
+      "from_version": "1.1.0",
+      "to_version": "1.1.0",
+      "timestamp": "2025-11-29T22:48:52.977508",
+      "status": "completed",
+      "backup_path": "aura_ia_mcp\\ops\\role_engine\\backups\\backup_1.1.0_20251129_224852",
+      "error": null
+    },
+    {
+      "migration_id": "migration_20251129_224853",
+      "from_version": "3.0.0",
+      "to_version": "2.0.0",
+      "timestamp": "2025-11-29T22:48:53.160905",
+      "status": "completed",
+      "backup_path": "aura_ia_mcp\\ops\\role_engine\\backups\\backup_3.0.0_20251129_224853",
+      "error": null
+    }
+  ]
+}

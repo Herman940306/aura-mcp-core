@@ -1,0 +1,26 @@
+name: Container Build & Scan
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+jobs:
+  build-and-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build backend image
+        run: docker build -f docker/Dockerfile.backend -t aura-backend:ci .
+      - name: Trivy Scan (FS)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: 'aura-backend:ci'
+          format: 'table'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+      - name: Fail on high/critical
+        run: |
+          trivy image --exit-code 1 --ignore-unfixed --severity HIGH,CRITICAL aura-backend:ci || exit 1

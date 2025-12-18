@@ -1,0 +1,12 @@
+{
+  "endpoint": "/chat/send/invalid_json",
+  "method": "POST",
+  "timestamp": "2025-12-07T15:45:21.439055",
+  "request": {
+    "content": "not valid json"
+  },
+  "response": {
+    "status_code": 400
+  },
+  "status_code": 400
+}

@@ -1,0 +1,16 @@
+{
+  "endpoint": "/embed/similarity",
+  "method": "POST",
+  "timestamp": "2025-12-07T14:19:45.928650",
+  "request": {
+    "texts": [
+      "The weather is nice today",
+      "Today the weather is pleasant"
+    ]
+  },
+  "response": {
+    "similarity": 0.8989,
+    "passed": true
+  },
+  "status_code": 200
+}

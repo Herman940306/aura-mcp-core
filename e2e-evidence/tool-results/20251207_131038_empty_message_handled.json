@@ -1,0 +1,12 @@
+{
+  "tool_name": "empty_message",
+  "timestamp": "2025-12-07T13:10:38.515760",
+  "status": "handled",
+  "request": {
+    "message": "",
+    "conversation_id": "e2e-test-empty"
+  },
+  "response": {
+    "error": "No message provided"
+  }
+}

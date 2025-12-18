@@ -1,0 +1,14 @@
+{
+  "test": "llm_quality",
+  "prompt": "Tell me something interesting about space.",
+  "response": "Interesting fact: The largest known asteroid in our solar system is Ceres, which resides in the Asteroid Belt between Mars and Jupiter. It's so large that it was reclassified as a dwarf planet by the International Astronomical Union (IAU) in 2",
+  "validation": {
+    "passed": true,
+    "message": "LLM response quality valid",
+    "details": {
+      "length": 243,
+      "word_count": 41,
+      "errors": []
+    }
+  }
+}

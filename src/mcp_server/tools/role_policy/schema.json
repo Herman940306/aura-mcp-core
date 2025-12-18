@@ -1,0 +1,11 @@
+{
+    "name": "role_policy",
+    "version": "0.1.0",
+    "inputs": {
+        "role": "string"
+    },
+    "outputs": {
+        "allowed": "boolean",
+        "risk_score": "number"
+    }
+}

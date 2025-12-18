@@ -1,0 +1,52 @@
+{{- if .Values.roleEngine.enabled }}
+# =============================================================================
+# Aura IA Role Engine Deployment
+# Port: 9206 (Canonical)
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.roleEngine.name }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.roleEngine.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: role-engine
+    app.kubernetes.io/part-of: aura-ia
+spec:
+  replicas: {{ .Values.roleEngine.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.roleEngine.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.roleEngine.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: role-engine
+    spec:
+      serviceAccountName: {{ include "aura-ia.serviceAccountName" . }}
+      containers:
+        - name: role-engine
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.roleEngine.image.repository }}:{{ .Values.roleEngine.image.tag }}"
+          imagePullPolicy: {{ .Values.roleEngine.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.roleEngine.service.targetPort }}
+              protocol: TCP
+          env:
+            - name: AURA_IA_ROLE_ENGINE_PORT
+              value: "{{ .Values.roleEngine.service.targetPort }}"
+            - name: GATEWAY_URL
+              value: "http://{{ .Values.gateway.name }}:{{ .Values.gateway.service.port }}"
+          {{- with .Values.roleEngine.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.roleEngine.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.roleEngine.resources | nindent 12 }}
+{{- end }}

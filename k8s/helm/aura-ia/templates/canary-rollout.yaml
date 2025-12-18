@@ -1,0 +1,284 @@
+# =============================================================================
+# Aura IA Argo Rollouts - Canary Deployment Strategy
+# Progressive delivery with automated analysis
+# =============================================================================
+
+{{- if .Values.canary.enabled }}
+{{- if .Values.gateway.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Values.gateway.name }}-rollout
+  labels:
+    {{- include "aura-ia.gateway.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.gateway.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.gateway.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aura-ia.gateway.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aura-ia.serviceAccountName" . }}
+      containers:
+        - name: gateway
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }}"
+          imagePullPolicy: {{ .Values.gateway.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.gateway.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.gateway.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- with .Values.gateway.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.gateway.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.gateway.resources | nindent 12 }}
+  strategy:
+    canary:
+      # Canary service for traffic splitting
+      canaryService: {{ .Values.gateway.name }}-canary
+      stableService: {{ .Values.gateway.name }}
+
+      # Traffic routing via Ingress
+      trafficRouting:
+        nginx:
+          stableIngress: {{ include "aura-ia.fullname" . }}-ingress
+          additionalIngressAnnotations:
+            canary-by-header: X-Canary
+            canary-by-header-value: "true"
+
+      # Progressive rollout steps
+      steps:
+        # Step 1: 5% canary traffic
+        - setWeight: 5
+        - pause: { duration: 2m }
+
+        # Step 2: Automated analysis
+        - analysis:
+            templates:
+              - templateName: {{ include "aura-ia.fullname" . }}-success-rate
+            args:
+              - name: service-name
+                value: {{ .Values.gateway.name }}-canary
+
+        # Step 3: 25% canary traffic
+        - setWeight: 25
+        - pause: { duration: 5m }
+
+        # Step 4: 50% canary traffic
+        - setWeight: 50
+        - pause: { duration: 5m }
+
+        # Step 5: Final analysis before full rollout
+        - analysis:
+            templates:
+              - templateName: {{ include "aura-ia.fullname" . }}-success-rate
+            args:
+              - name: service-name
+                value: {{ .Values.gateway.name }}-canary
+
+        # Step 6: 100% traffic (full promotion)
+        - setWeight: 100
+
+      # Anti-affinity for canary pods
+      antiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution: {}
+
+      # Max unavailable during rollout
+      maxUnavailable: 0
+      maxSurge: "25%"
+{{- end }}
+
+{{- if .Values.ml.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Values.ml.name }}-rollout
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.ml.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "aura-ia.ml.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "aura-ia.ml.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "aura-ia.serviceAccountName" . }}
+      containers:
+        - name: ml-backend
+          image: "{{ .Values.global.imageRegistry }}{{ .Values.ml.image.repository }}:{{ .Values.ml.image.tag }}"
+          imagePullPolicy: {{ .Values.ml.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.ml.service.targetPort }}
+              protocol: TCP
+          env:
+            {{- range $key, $value := .Values.ml.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- with .Values.ml.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.ml.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.ml.resources | nindent 12 }}
+  strategy:
+    canary:
+      canaryService: {{ .Values.ml.name }}-canary
+      stableService: {{ .Values.ml.name }}
+
+      steps:
+        # ML Backend: More conservative rollout
+        - setWeight: 10
+        - pause: { duration: 5m }
+
+        - analysis:
+            templates:
+              - templateName: {{ include "aura-ia.fullname" . }}-ml-latency
+            args:
+              - name: service-name
+                value: {{ .Values.ml.name }}-canary
+
+        - setWeight: 30
+        - pause: { duration: 10m }
+
+        - setWeight: 60
+        - pause: { duration: 10m }
+
+        - analysis:
+            templates:
+              - templateName: {{ include "aura-ia.fullname" . }}-ml-latency
+            args:
+              - name: service-name
+                value: {{ .Values.ml.name }}-canary
+
+        - setWeight: 100
+
+      maxUnavailable: 0
+      maxSurge: "25%"
+{{- end }}
+
+---
+# AnalysisTemplate for HTTP success rate
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-success-rate
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: success-rate
+      interval: 30s
+      count: 5
+      successCondition: result[0] >= 0.95
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: {{ .Values.canary.prometheus.address | default "http://prometheus-server:9090" }}
+          query: |
+            sum(rate(
+              aura_ia_http_requests_total{
+                service="{{`{{args.service-name}}`}}",
+                status=~"2.."
+              }[5m]
+            )) / sum(rate(
+              aura_ia_http_requests_total{
+                service="{{`{{args.service-name}}`}}"
+              }[5m]
+            ))
+
+---
+# AnalysisTemplate for ML latency
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ include "aura-ia.fullname" . }}-ml-latency
+  labels:
+    {{- include "aura-ia.labels" . | nindent 4 }}
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: p99-latency
+      interval: 30s
+      count: 5
+      # P99 latency must be under 2 seconds
+      successCondition: result[0] < 2000
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: {{ .Values.canary.prometheus.address | default "http://prometheus-server:9090" }}
+          query: |
+            histogram_quantile(0.99,
+              sum(rate(
+                aura_ia_request_duration_seconds_bucket{
+                  service="{{`{{args.service-name}}`}}"
+                }[5m]
+              )) by (le)
+            ) * 1000
+
+---
+# Canary Service for Gateway
+{{- if .Values.gateway.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.gateway.name }}-canary
+  labels:
+    {{- include "aura-ia.gateway.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.gateway.service.port }}
+      targetPort: {{ .Values.gateway.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "aura-ia.gateway.selectorLabels" . | nindent 4 }}
+{{- end }}
+
+---
+# Canary Service for ML Backend
+{{- if .Values.ml.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.ml.name }}-canary
+  labels:
+    {{- include "aura-ia.ml.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.ml.service.port }}
+      targetPort: {{ .Values.ml.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "aura-ia.ml.selectorLabels" . | nindent 6 }}
+{{- end }}
+{{- end }}

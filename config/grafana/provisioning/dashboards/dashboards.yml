@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: 'Aura IA Dashboards'
+    orgId: 1
+    folder: 'Aura IA MCP'
+    folderUid: 'aura-ia-mcp'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards

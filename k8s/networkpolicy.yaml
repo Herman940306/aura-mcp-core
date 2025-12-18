@@ -1,0 +1,95 @@
+---
+# NetworkPolicy: mcp-server
+# Restricts ingress/egress for mcp-server pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mcp-server-netpol
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: mcp-server
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress from ingress controller
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            name: ingress-nginx
+      ports:
+      - protocol: TCP
+        port: 8000
+  egress:
+    # Allow DNS resolution
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            name: kube-system
+      ports:
+      - protocol: UDP
+        port: 53
+    # Allow OTEL collector
+    - to:
+      - podSelector:
+          matchLabels:
+            app: otel-collector
+      ports:
+      - protocol: TCP
+        port: 4318
+    # Allow ml-backend communication
+    - to:
+      - podSelector:
+          matchLabels:
+            app: ml-backend
+      ports:
+      - protocol: TCP
+        port: 8001
+    # Allow external HTTPS (for model APIs, GitHub)
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443
+
+---
+# NetworkPolicy: ml-backend
+# Restricts ingress for ml-backend
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ml-backend-netpol
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      app: ml-backend
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Only allow from mcp-server
+    - from:
+      - podSelector:
+          matchLabels:
+            app: mcp-server
+      ports:
+      - protocol: TCP
+        port: 8001
+  egress:
+    # Allow DNS
+    - to:
+      - namespaceSelector:
+          matchLabels:
+            name: kube-system
+      ports:
+      - protocol: UDP
+        port: 53
+    # Allow external HTTPS (for model downloads)
+    - to:
+      - namespaceSelector: {}
+      ports:
+      - protocol: TCP
+        port: 443

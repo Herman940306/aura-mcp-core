@@ -1,0 +1,12 @@
+{
+  "endpoint": "/embed",
+  "method": "POST",
+  "timestamp": "2025-12-07T14:34:06.188415",
+  "request": {
+    "text": "test embedding"
+  },
+  "response": {
+    "status_code": 200
+  },
+  "status_code": 200
+}

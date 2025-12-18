@@ -1,0 +1,5 @@
+# Placeholder for Vosk model
+
+# Download with: python scripts/download_models.py
+
+# Or manually: wget <https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip>

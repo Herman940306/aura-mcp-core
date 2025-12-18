@@ -1,0 +1,19 @@
+{
+  "id": "5ef350a0-95d1-44f3-97cc-4d26a7e3624d",
+  "proposal": {
+    "name": "TestRole",
+    "purpose": "Testing",
+    "responsibilities": [],
+    "scoring_profile": {
+      "priority": 1
+    },
+    "version": "1.0"
+  },
+  "reason": "Test proposal",
+  "evidence": [],
+  "meta": {
+    "ts": 1765136003.048502,
+    "risk": 0.5,
+    "status": "proposed"
+  }
+}

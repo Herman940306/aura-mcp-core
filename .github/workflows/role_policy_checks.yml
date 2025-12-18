@@ -1,0 +1,8 @@
+name: Role Policy Checks
+on: [push, pull_request]
+jobs:
+  policies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "TODO: integrate OPA evaluation" && exit 0
