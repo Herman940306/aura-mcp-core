@@ -1046,3 +1046,44 @@ to refresh caches and view active thresholds.
   - Retrieval is integrated in `DualModelEngine` and prepends context to the initial conversation when enabled.
   - Metrics: Prometheus `retrieval_latency_seconds` (Histogram) and `retrieval_hits_total` (Counter).
     - Audit (optional): Set `RETRIEVAL_AUDIT_LOG=1` and optionally `RETRIEVAL_AUDIT_PATH` (default `logs/security_audit.jsonl`) to record retrieval failures without impacting flow.
+
+
+---
+
+## 🛡️ Security & Repository Migration
+
+### Zero-Leak Release (December 2025)
+
+This repository was re-initialized to ensure a clean, secure release for public portfolio use. The following security measures were implemented:
+
+#### What Was Done
+
+1. **Secret Extraction**: All hardcoded secrets were identified and moved to environment variables:
+   - API keys (OpenAI, Anthropic, Google, DeepSeek, Groq)
+   - Home Assistant tokens and URLs
+   - Media automation credentials (Sonarr, Radarr, SABnzbd, Plex)
+   - Smart TV integration (IP, MAC, client key)
+   - Database connection strings
+
+2. **History Sanitization**: Git history was completely wiped and re-initialized to ensure no secrets exist in any previous commits.
+
+3. **Dynamic Configuration**: Frontend code (`dashboard/assets/app.js`) uses dynamic host detection instead of hardcoded IPs.
+
+4. **Documentation Sanitization**: All documentation files use placeholder values like `{{NAS_IP}}`, `{{YOUR_SSH_USER}}`, and `{{HOME_ASSISTANT_IP}}`.
+
+#### Security Best Practices
+
+- ✅ All secrets stored in `.env` (gitignored)
+- ✅ `.env.example` contains only placeholder values
+- ✅ No hardcoded IPs, tokens, or credentials in source code
+- ✅ Backup folder (`aura_backup_pre_sanitization/`) excluded from Git
+- ✅ Private documentation (`docs/private/`) excluded from Git
+
+#### For Contributors
+
+1. Copy `.env.example` to `.env`
+2. Fill in your own credentials
+3. Never commit `.env` or any file containing real secrets
+4. Use environment variables for all sensitive configuration
+
+---
